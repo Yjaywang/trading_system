@@ -142,7 +142,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'analyzer-task': {
         'task': 'core.services.tasks.analyzer_task',
-        'schedule': crontab(minute='10', hour='14', day_of_week='1-5'), # Mon to Fri 14:00
+        'schedule': crontab(minute='10', hour='14', day_of_week='1-5'), # Mon to Fri 14:10
     },
     'order-task': {
         'task': 'core.services.tasks.order_task',
