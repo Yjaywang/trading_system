@@ -27,6 +27,7 @@ services:
     depends_on:
       - redis
       - web
+
   celery_beat:
     image: trading_system_image
     working_dir: /trading_system/trading_system
@@ -36,6 +37,7 @@ services:
     depends_on:
       - redis
       - web
+
   flower:
     image: trading_system_image
     working_dir: /trading_system/trading_system
