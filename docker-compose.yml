@@ -1,15 +1,6 @@
 version: '3'
 
 services:
-  db:
-    image: postgres
-    environment:
-      POSTGRES_DB: trading_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
-    ports:
-      - "5432:5432"
-
   redis:
     image: redis:alpine
     ports:
@@ -17,38 +8,40 @@ services:
 
   web:
     build: .
+    image: trading_system_image
+    working_dir: /trading_system/trading_system
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/trading_system
     ports:
       - "8000:8000"
     depends_on:
-      - db
       - redis
 
-  celery:
-    build: .
+  celery_worker:
+    image: trading_system_image
+    working_dir: /trading_system/trading_system
     command: celery -A trading_system worker --loglevel=info
     volumes:
-      - .:/app
+      - .:/trading_system
     depends_on:
-      - db
       - redis
-
+      - web
   celery_beat:
-    build: .
+    image: trading_system_image
+    working_dir: /trading_system/trading_system
     command: celery -A trading_system beat --loglevel=info
     volumes:
-      - .:/app
+      - .:/trading_system
     depends_on:
-      - db
       - redis
-
+      - web
   flower:
-    build: .
+    image: trading_system_image
+    working_dir: /trading_system/trading_system
     command: celery -A trading_system flower --port=5555 --broker=redis://redis:6379/0
     ports:
       - "5555:5555"
     depends_on:
       - redis
-      - celery
+      - web

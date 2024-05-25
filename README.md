@@ -13,3 +13,6 @@ django-admin startapp core
 python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver
+
+docker-compose build
+docker-compose up -d
