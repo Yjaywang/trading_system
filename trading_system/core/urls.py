@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import execute_back_test_task
+from .views import view_dtl, option_data_list
 
 urlpatterns = [
-    path('execute-task/', execute_back_test_task, name='execute_back_test_task'),
+    path('', view_dtl, name='execute_back_test_task'),
+    path('test', option_data_list, name='execute_back_test_task'),
 ]

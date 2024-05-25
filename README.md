@@ -10,3 +10,6 @@ deactivate
 django-admin startproject trading_system
 cd trading_system
 django-admin startapp core
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
