@@ -5,6 +5,7 @@ import core.models as models
 import core.serializers as serializers
 from rest_framework import status
 import json
+from .services.line import analysis_result
 
 
 @api_view()
@@ -21,14 +22,16 @@ def option_data_list(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = serializers.OptionDataSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'msg': 'OptionData created successfully', 'data': serializer.data
-            },
-                            status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(analysis_result('test'))
+
+        # serializer = serializers.OptionDataSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response({
+        #         'msg': 'OptionData created successfully', 'data': serializer.data
+        #     },
+        #                     status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
         serializer = serializers.OptionDataSerializer(data=request.data)
         if serializer.is_valid():

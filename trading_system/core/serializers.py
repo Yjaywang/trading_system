@@ -2,57 +2,55 @@ from rest_framework import serializers
 from .models import OptionData, DayPrice, NightPrice, Settlement, Signal, Order, Revenue, Backtest
 
 
-class OptionDataSerializer(serializers.ModelSerializer):
+class BaseModelSerializer(serializers.ModelSerializer):
 
     class Meta:
+        fields = '__all__'
+
+
+class OptionDataSerializer(BaseModelSerializer):
+
+    class Meta(BaseModelSerializer.Meta):
         model = OptionData
-        fields = '__all__'
 
 
-class DayPriceSerializer(serializers.ModelSerializer):
+class DayPriceSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = DayPrice
-        fields = '__all__'
 
 
-class NightPriceSerializer(serializers.ModelSerializer):
+class NightPriceSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = NightPrice
-        fields = '__all__'
 
 
-class SettlementSerializer(serializers.ModelSerializer):
+class SettlementSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = Settlement
-        fields = '__all__'
 
 
-class SignalSerializer(serializers.ModelSerializer):
+class SignalSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = Signal
-        fields = '__all__'
 
 
-class OrderSerializer(serializers.ModelSerializer):
+class OrderSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = Order
-        fields = '__all__'
 
 
-class RevenueSerializer(serializers.ModelSerializer):
+class RevenueSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = Revenue
-        fields = '__all__'
 
 
-class BacktestSerializer(serializers.ModelSerializer):
+class BacktestSerializer(BaseModelSerializer):
 
-    class Meta:
+    class Meta(BaseModelSerializer.Meta):
         model = Backtest
-        fields = '__all__'
