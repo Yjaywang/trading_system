@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
+
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -123,3 +126,30 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Taipei' # set taiwan time
+
+CELERY_BEAT_SCHEDULE = {
+    'scraper-task': {
+        'task': 'core.services.tasks.scraper_task',
+        'schedule': crontab(minute='0', hour='14', day_of_week='1-5'),  # Mon to Fri 14:00
+    },
+    'analyzer-task': {
+        'task': 'core.services.tasks.analyzer_task',
+        'schedule': crontab(minute='10', hour='14', day_of_week='1-5'), # Mon to Fri 14:00
+    },
+    'order-task': {
+        'task': 'core.services.tasks.order_task',
+        'schedule': crontab(minute='0', hour='15', day_of_week='1-5'),  # Mon to Fri 15:00
+    },
+    'close-task': {
+        'task': 'core.services.tasks.order_task',
+        'schedule': crontab(minute='44', hour='13', day_of_week='1-5'), # Mon to Fri 13:44
+    },
+}
