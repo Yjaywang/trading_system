@@ -4,6 +4,8 @@ WORKDIR /trading_system
 
 COPY requirements.txt .
 
+ENV PYTHONUNBUFFERED=1
+
 RUN pip install -r requirements.txt
 
 COPY . .
