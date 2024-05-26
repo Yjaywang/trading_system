@@ -6,12 +6,12 @@ load_dotenv()
 
 
 def push_message(message):
-    url = "https://api.line.me/v2/bot/message/push"
+    url = f"{os.getenv('LINE_PUSH_MESSAGE_URL')}"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN', '')}",
+        "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN')}",
     }
-    data = {"to": os.getenv('LINE_USER_ID', ''), "messages": [{"type": "text", "text": f"{message}"}]}
+    data = {"to": os.getenv('LINE_USER_ID'), "messages": [{"type": "text", "text": f"{message}"}]}
 
     try:
         response = requests.post(url, headers=headers, json=data)

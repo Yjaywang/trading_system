@@ -6,6 +6,7 @@ import core.serializers as serializers
 from rest_framework import status
 import json
 from .services.line import analysis_result
+from .services.scraper import run_op_scraper
 
 
 @api_view()
@@ -13,20 +14,28 @@ def view_dtl(request):
     return Response({'success': 200, 'message': 'api'})
 
 
+@api_view(['POST'])
+def op_scraper(request):
+
+    run_op_scraper()
+    print('ok')
+    return Response('')
+
+
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def option_data_list(request):
     if request.method == 'GET':
         option_data = models.OptionData.objects.all()
-        option_data = models.OptionData.objects.filter(date="2023-05-24")
+        # option_data = models.OptionData.objects.filter(date="2023-05-24")
         serializer = serializers.OptionDataSerializer(option_data, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        return Response(analysis_result('test'))
+        # return Response(run_op_scraper())
 
-        # serializer = serializers.OptionDataSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
+        serializer = serializers.OptionDataSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
         #     return Response({
         #         'msg': 'OptionData created successfully', 'data': serializer.data
         #     },

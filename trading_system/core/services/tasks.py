@@ -1,12 +1,12 @@
 from celery import shared_task
-from .scraper import run_scraper
+from .scraper import run_op_scraper
 from .analyzer import run_analysis
 from .order import place_orders, close_orders
 
 
 @shared_task
 def scraper_task():
-    run_scraper()
+    run_op_scraper()
 
 
 @shared_task
