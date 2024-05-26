@@ -5,7 +5,7 @@ import core.models as models
 import core.serializers as serializers
 from rest_framework import status
 import json
-from .services.line import analysis_result
+from .services.line import push_message
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date
 
 
@@ -28,11 +28,12 @@ def price_scraper(request):
     return Response('')
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 def settlement(request):
-    insert_settlement_date()
-    print('ok')
-    return Response('')
+    if request.method == 'POST':
+        insert_settlement_date()
+        print('ok')
+        return Response('')
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])

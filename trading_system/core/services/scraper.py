@@ -4,9 +4,10 @@ import json
 from datetime import datetime, timedelta, time as dt_time
 import pandas as pd
 from dotenv import load_dotenv
-from ..models import OptionData, PriceData
-from ..serializers import OptionDataSerializer, PriceDataSerializer
+from ..models import OptionData, PriceData, Settlement
+from ..serializers import OptionDataSerializer, PriceDataSerializer, SettlementSerializer
 from ..utils.helper import post_form_data, parse_html
+from .line import push_message
 
 load_dotenv()
 
@@ -56,7 +57,6 @@ def run_op_scraper():
             }
             op_result = post_form_data(op_url, form_data)
             op_raw_data = parse_html(op_result)
-            print(op_raw_data)
             if isinstance(op_raw_data, list) and len(op_raw_data) > 0:
                 tw_trade_call_count = int(op_raw_data[0][8].replace(",", ""))
                 tw_trade_call_amount = int(op_raw_data[0][9].replace(",", ""))
@@ -89,15 +89,32 @@ def run_op_scraper():
             time.sleep(3)
             current_date += timedelta(days=1)
         if len(op_data_objs) > 0:
-            serializer = OptionDataSerializer(data=op_data_objs, many=True)
+
+            # search for db existing date -> ['date1','date2'...]
+            existing_data = OptionData.objects.filter(date__in=[item['date'] for item in op_data_objs]).values_list(
+                'date', flat=True)
+
+            # transform a existiing set
+            existing_set = set(existing_data)
+
+            # filter new data
+            new_data = [item for item in op_data_objs if item['date'] not in existing_set]
+            if not new_data:
+                print('sync option data already exist in db')
+                push_message('sync option data already exist in db')
+                return
+
+            serializer = OptionDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 OptionData.objects.bulk_create([OptionData(**item) for item in serializer.data])
                 print("Option data successfully saved.")
             else:
                 print("Validation errors occurred.")
                 print(serializer.errors)
+                push_message(f'sync option data validation error: {serializer.errors}')
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"sync option data error: {e}")
+        push_message(f'sync option data error: {e}')
 
 
 def run_price_scraper():
@@ -119,15 +136,12 @@ def run_price_scraper():
             start_date = latest_date + timedelta(days=1)
     except PriceData.DoesNotExist:
         print("No PriceData found in the database.")
-        # latest_date_str = datetime.today().strftime("%Y/%m/%d")
-        latest_date_str = '2024/05/01'
+        latest_date_str = datetime.today().strftime("%Y/%m/%d")
         latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
         start_date = latest_date
         end_date = datetime.today()
 
     try:
-        # latest_date_str = '2024/05/01'
-
         market_data_objs = []
         weekday_transform = {
             0: "Mon",
@@ -192,22 +206,87 @@ def run_price_scraper():
                     market_data_objs.append(market_data_obj)
             time.sleep(3)
             current_date += timedelta(days=1)
-        market_df = pd.DataFrame(market_data_objs)
-        print(market_df)
+
         if len(market_data_objs) > 0:
-            serializer = PriceDataSerializer(data=market_data_objs, many=True)
+            # search for db existing date -> [('date', 'period'), ('date', 'period'), ...]
+            existing_data = PriceData.objects.filter(
+                date__in=[item['date'] for item in market_data_objs],
+                period__in=[item['period'] for item in market_data_objs]).values_list('date', 'period')
+
+            # transform a existiing set
+            existing_set = set(existing_data)
+
+            # filter new data
+            new_data = [item for item in market_data_objs if (item['date'], item['period']) not in existing_set]
+            if not new_data:
+                print('already exist in db')
+                return
+
+            serializer = PriceDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 PriceData.objects.bulk_create([PriceData(**item) for item in serializer.data])
                 print("Price data successfully saved.")
             else:
                 print("Validation errors occurred.")
                 print(serializer.errors)
-
+                push_message(f'sync price data validation error: {serializer.errors}')
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        push_message(f'sync price data error: {e}')
 
 
 def insert_settlement_date():
-    with open('trading_system/core/settlement.json', 'r') as json_file:
-        settlement_date = json.load(json_file)
-    print(settlement_date)
+    current_directory = os.path.dirname(__file__)
+    # Go up one directory level
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    # Construct the path to the JSON file in the previous directory
+    json_file_path = os.path.join(parent_directory, 'settlement.json')
+    weekday_transform = {
+        0: "Mon",
+        1: "Tue",
+        2: "Wed",
+        3: "Thu",
+        4: "Fri",
+        5: "Sat",
+        6: "Sun",
+    }
+    try:
+        with open(json_file_path, 'r') as json_file:
+            settlement_dates = json.load(json_file)
+        settlement_date_objs = []
+        for settlement_date in settlement_dates:
+            pieces = settlement_date.split('/')
+            settlement_date_obj = {
+                'year': int(pieces[0]),
+                'month': int(pieces[1]),
+                'date': settlement_date,
+                'day': weekday_transform[datetime.strptime(settlement_date, "%Y/%m/%d").weekday()]
+            }
+            settlement_date_objs.append(settlement_date_obj)
+
+        if len(settlement_date_objs) > 0:
+            # search for db existing date
+            existing_data = Settlement.objects.filter(
+                date__in=[item['date'] for item in settlement_date_objs]).values_list(
+                    'date', flat=True)
+
+            # transform a existiing set
+            existing_set = set(existing_data)
+
+            # filter new data
+            new_data = [item for item in settlement_date_objs if item['date'] not in existing_set]
+            if not new_data:
+                print('already exist in db')
+                return
+
+            serializer = SettlementSerializer(data=new_data, many=True)
+            if serializer.is_valid():
+                Settlement.objects.bulk_create([Settlement(**item) for item in serializer.data])
+                print("Settlement date successfully saved.")
+            else:
+                print("Validation errors occurred.")
+                print(serializer.errors)
+                push_message(f'sync settlement validation error: {serializer.errors}')
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        push_message(f'sync settlement error: {e}')

@@ -21,15 +21,3 @@ def push_message(message):
         print(f"LINE HTTP error occurred: {http_err}")
     except Exception as err:
         print(f"LINE Other error occurred: {err}")
-
-
-def analysis_result(message):
-    return push_message(message)
-
-
-def order_result(message):
-    return push_message(message)
-
-
-def close_result(message):
-    return push_message(message)

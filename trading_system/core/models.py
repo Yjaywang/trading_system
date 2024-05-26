@@ -62,7 +62,7 @@ class Settlement(models.Model):
 
 
 class Signal(models.Model):
-    option_data = models.ForeignKey(OptionData, on_delete=models.CASCADE, related_name='Signals')
+    # option_data = models.ForeignKey(OptionData, on_delete=models.CASCADE, related_name='Signals')
     signal_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
@@ -79,7 +79,7 @@ class Signal(models.Model):
 
 
 class Order(models.Model):
-    signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Orders')
+    # signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Orders')
     order_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
@@ -97,8 +97,8 @@ class Order(models.Model):
 
 
 class Revenue(models.Model):
-    signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Revenues')
-    order_data = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='Revenues')
+    # signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Revenues')
+    # order_data = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='Revenues')
     revenue_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
@@ -118,8 +118,8 @@ class Revenue(models.Model):
 
 
 class Backtest(models.Model):
-    option_data = models.ForeignKey(OptionData, on_delete=models.CASCADE, related_name='Backtests')
-    signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Backtests')
+    # option_data = models.ForeignKey(OptionData, on_delete=models.CASCADE, related_name='Backtests')
+    # signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Backtests')
     backtest_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
