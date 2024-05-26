@@ -6,7 +6,7 @@ import core.serializers as serializers
 from rest_framework import status
 import json
 from .services.line import analysis_result
-from .services.scraper import run_op_scraper
+from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date
 
 
 @api_view()
@@ -16,8 +16,21 @@ def view_dtl(request):
 
 @api_view(['POST'])
 def op_scraper(request):
-
     run_op_scraper()
+    print('ok')
+    return Response('')
+
+
+@api_view(['POST'])
+def price_scraper(request):
+    run_price_scraper()
+    print('ok')
+    return Response('')
+
+
+@api_view(['GET', 'POST'])
+def settlement(request):
+    insert_settlement_date()
     print('ok')
     return Response('')
 

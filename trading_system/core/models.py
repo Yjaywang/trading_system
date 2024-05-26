@@ -29,7 +29,7 @@ class OptionData(models.Model):
         return f'{self.date} - {self.day} - {self.option_id}'
 
 
-class DayPrice(models.Model):
+class PriceData(models.Model):
     day_price_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
@@ -40,6 +40,7 @@ class DayPrice(models.Model):
     low = models.IntegerField()
     close = models.IntegerField()
     volume = models.IntegerField()
+    period = models.CharField(max_length=10)             # day, night
     created_at = models.DateTimeField(auto_now_add=True) # created time
     updated_at = models.DateTimeField(auto_now=True)     # updated time
 
@@ -47,29 +48,11 @@ class DayPrice(models.Model):
         return f'{self.date} - {self.day} - {self.day_price_id}'
 
 
-class NightPrice(models.Model):
-    night_price_id = models.AutoField(primary_key=True)
-    year = models.IntegerField()
-    month = models.IntegerField()
-    date = models.CharField(max_length=10)               # YYYY-MM-DD
-    day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
-    open = models.IntegerField()
-    high = models.IntegerField()
-    low = models.IntegerField()
-    close = models.IntegerField()
-    volume = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True) # created time
-    updated_at = models.DateTimeField(auto_now=True)     # updated time
-
-    def __str__(self):
-        return f'{self.date} - {self.day} - {self.night_price_id}'
-
-
 class Settlement(models.Model):
     settlement_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
-    date = models.CharField(max_length=10)               # YYYY-MM-DD
+    date = models.CharField(max_length=10, unique=True)  # YYYY-MM-DD
     day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
     created_at = models.DateTimeField(auto_now_add=True) # created time
     updated_at = models.DateTimeField(auto_now=True)     # updated time

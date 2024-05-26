@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import OptionData, DayPrice, NightPrice, Settlement, Signal, Order, Revenue, Backtest
+from .models import OptionData, PriceData, Settlement, Signal, Order, Revenue, Backtest
 
 
 class BaseModelSerializer(serializers.ModelSerializer):
@@ -14,16 +14,10 @@ class OptionDataSerializer(BaseModelSerializer):
         model = OptionData
 
 
-class DayPriceSerializer(BaseModelSerializer):
+class PriceDataSerializer(BaseModelSerializer):
 
     class Meta(BaseModelSerializer.Meta):
-        model = DayPrice
-
-
-class NightPriceSerializer(BaseModelSerializer):
-
-    class Meta(BaseModelSerializer.Meta):
-        model = NightPrice
+        model = PriceData
 
 
 class SettlementSerializer(BaseModelSerializer):
