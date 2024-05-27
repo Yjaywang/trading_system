@@ -22,8 +22,6 @@ def place_orders():
             'deal_price': 11,
         }
 
-    push_message(f'1. date: 2024/05/27\n2. action: {action} \n3. status: success')
-
 
 def close_orders():
     pass

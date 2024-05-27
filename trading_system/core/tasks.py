@@ -8,11 +8,13 @@ from .services.line import push_message
 @shared_task
 def op_scraper_task():
     run_op_scraper()
+    push_message('test op scraper')
 
 
 @shared_task
 def price_scraper_task():
     run_price_scraper()
+    push_message('test price scraper')
 
 
 @shared_task
