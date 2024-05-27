@@ -139,7 +139,8 @@ CELERY_TIMEZONE = 'Asia/Taipei' # set taiwan time
 CELERY_BEAT_SCHEDULE = {
     'op-scraper-task': {
         'task': 'core.tasks.op_scraper_task',
-        'schedule': crontab(minute='0', hour='14', day_of_week='1-5'),  # Mon to Fri 14:00
+        'schedule': crontab(minute='*', hour='*'),
+                                                                          # 'schedule': crontab(minute='0', hour='14', day_of_week='1-5'),  # Mon to Fri 14:00
     },
     'price-scraper-task': {
         'task': 'core.tasks.price_scraper_task',
