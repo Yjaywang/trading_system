@@ -64,15 +64,16 @@ class Settlement(models.Model):
 class Signal(models.Model):
     # option_data = models.ForeignKey(OptionData, on_delete=models.CASCADE, related_name='Signals')
     signal_id = models.AutoField(primary_key=True)
-    year = models.IntegerField()
-    month = models.IntegerField()
-    date = models.CharField(max_length=10)               # YYYY-MM-DD
-    day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
-    settlement_signal = models.IntegerField(default=0)   # default 0, settlement day is 1
-    reverse_signal = models.IntegerField(default=0)      # default 0, 1st day after settlement is 1
+    year = models.IntegerField(null=True, blank=True)
+    month = models.IntegerField(null=True, blank=True)
+    date = models.CharField(max_length=10, null=True, blank=True) # YYYY-MM-DD
+    day = models.CharField(max_length=10, null=True, blank=True)  # Mon, Tue, Wed, Thu, Fri
+    ref_date = models.CharField(max_length=10)                    # YYYY-MM-DD
+    settlement_signal = models.IntegerField(default=0)
+    reverse_signal = models.IntegerField(default=0)
     trading_signal = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True) # created time
-    updated_at = models.DateTimeField(auto_now=True)     # updated time
+    created_at = models.DateTimeField(auto_now_add=True)          # created time
+    updated_at = models.DateTimeField(auto_now=True)              # updated time
 
     def __str__(self):
         return f'{self.date} - {self.day} - {self.signal_id}'
@@ -118,8 +119,6 @@ class Revenue(models.Model):
 
 
 class Backtest(models.Model):
-    # option_data = models.ForeignKey(OptionData, on_delete=models.CASCADE, related_name='Backtests')
-    # signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Backtests')
     backtest_id = models.AutoField(primary_key=True)
     year = models.IntegerField()
     month = models.IntegerField()
@@ -145,7 +144,7 @@ class Backtest(models.Model):
     put_count = models.IntegerField()
     put_amount = models.IntegerField()
     settlement_signal = models.IntegerField()
-    reverse_signal = models.IntegerField(default=0)      # default 0, 1st day after settlement is 1
+    reverse_signal = models.IntegerField(default=0)
     trading_signal = models.IntegerField()
     result = models.IntegerField()
     money_status = models.CharField(max_length=10)       # loss, gain, even

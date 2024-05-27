@@ -12,5 +12,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # auto discover task
 app.autodiscover_tasks()
 
-# set taiwan time
-app.conf.update(timezone='Asia/Taipei')
+
+@app.task(bind=True, ignore_result=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')

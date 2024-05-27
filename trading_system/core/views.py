@@ -6,12 +6,34 @@ import core.serializers as serializers
 from rest_framework import status
 import json
 from .services.line import push_message
-from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date
+from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_price
+from .services.analyzer import run_analysis
+from .services.order import place_orders
 
 
 @api_view()
 def view_dtl(request):
     return Response({'success': 200, 'message': 'api'})
+
+
+@api_view(['POST'])
+def test(request):
+    insert_price()
+    return Response('')
+
+
+@api_view(['POST'])
+def order(request):
+    place_orders()
+    print('ok')
+    return Response('')
+
+
+@api_view(['POST'])
+def analysis(request):
+    run_analysis()
+    print('ok')
+    return Response('')
 
 
 @api_view(['POST'])

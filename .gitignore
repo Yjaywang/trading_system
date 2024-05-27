@@ -1,4 +1,5 @@
-analyzer.py
+*.csv
+trding_signal.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

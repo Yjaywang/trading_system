@@ -119,6 +119,7 @@ def run_op_scraper():
 
 def run_price_scraper():
     is_db_no_data = True
+    is_night_first = False
     try:
         # get last option record
         latest_price_data = PriceData.objects.latest('created_at')
@@ -128,10 +129,10 @@ def run_price_scraper():
         latest_date_str = data.get('date', datetime.today().strftime("%Y/%m/%d"))
         latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
         end_date = datetime.today()
-
         # normally need to end in day period
-        if data.get('period', 'day') == 'night' and latest_date == end_date:
+        if data.get('period', 'day') == 'night':
             start_date = latest_date
+            is_night_first = True
         else:
             start_date = latest_date + timedelta(days=1)
     except PriceData.DoesNotExist:
@@ -155,17 +156,18 @@ def run_price_scraper():
         market_code_transform = {'day': 0, "night": 1}
         current_date = start_date
 
-        while current_date <= end_date:
+        while current_date.date() <= end_date.date():
             now_time = datetime.now()
             # Create a datetime object for today at 14:00
             today_14pm = datetime.combine(now_time.date(), dt_time(14, 0))
             market_periods = ['night', 'day']
 
-            if current_date == latest_date and now_time < today_14pm and is_db_no_data:
+            if current_date.date() == end_date.date() and now_time < today_14pm and is_db_no_data:
                 market_periods = ['night']
-            if current_date == latest_date and now_time < today_14pm and not is_db_no_data:
-                break
-            if current_date == latest_date and now_time >= today_14pm and not is_db_no_data:
+            if current_date.date() == end_date.date() and now_time < today_14pm and not is_db_no_data:
+                market_periods = ['night']
+            if current_date.date() == end_date.date(
+            ) and now_time >= today_14pm and not is_db_no_data and is_night_first:
                 market_periods = ['day']
             formatted_target_day = current_date.strftime("%Y/%m/%d")
             target_day = weekday_transform[current_date.weekday()]
@@ -219,7 +221,8 @@ def run_price_scraper():
             # filter new data
             new_data = [item for item in market_data_objs if (item['date'], item['period']) not in existing_set]
             if not new_data:
-                print('already exist in db')
+                print('sync price data already exist in db')
+                push_message(f'sync price data already exist in db')
                 return
 
             serializer = PriceDataSerializer(data=new_data, many=True)
@@ -276,7 +279,8 @@ def insert_settlement_date():
             # filter new data
             new_data = [item for item in settlement_date_objs if item['date'] not in existing_set]
             if not new_data:
-                print('already exist in db')
+                print('sync settlement already exist in db')
+                push_message(f'sync settlement already exist in db')
                 return
 
             serializer = SettlementSerializer(data=new_data, many=True)
@@ -290,3 +294,139 @@ def insert_settlement_date():
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         push_message(f'sync settlement error: {e}')
+
+
+#bulk insert from csv
+def insert_op():
+    current_directory = os.path.dirname(__file__)
+    # Go up one directory level
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    # Construct the path to the JSON file in the previous directory
+    o = [
+        os.path.join(parent_directory, 'op_2021.csv'),
+        os.path.join(parent_directory, 'op_2022.csv'),
+        os.path.join(parent_directory, 'op_2023.csv'),
+        os.path.join(parent_directory, 'op_2024.csv'),
+    ]
+
+    option_dfs = []
+    for path in o:
+        df = pd.read_csv(path)
+        option_dfs.append(df)
+
+    option_raw_df = pd.concat(option_dfs, ignore_index=True)
+
+    option_columns_to_keep = [
+        'year',
+        'month',
+        'date',
+        'day',
+        'tw_trade_call_count',
+        'tw_trade_call_amount',
+        'fr_trade_call_count',
+        'fr_trade_call_amount',
+        'tw_trade_put_count',
+        'tw_trade_put_amount',
+        'fr_trade_put_count',
+        'fr_trade_put_amount',
+        'call_count',
+        'call_amount',
+        'put_count',
+        'put_amount'
+    ]
+    option_df = option_raw_df[option_columns_to_keep]
+    option_objs = []
+    for _, row in option_df.iterrows():
+        data = dict(row)
+        option_objs.append(data)
+    try:
+        if len(option_objs) > 0:
+            serializer = OptionDataSerializer(data=option_objs, many=True)
+            if serializer.is_valid():
+                OptionData.objects.bulk_create([OptionData(**item) for item in serializer.data])
+                print("Settlement date successfully saved.")
+            else:
+                print("Validation errors occurred.")
+                print(serializer.errors)
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+
+def insert_price():
+    current_directory = os.path.dirname(__file__)
+    # Go up one directory level
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    # Construct the path to the JSON file in the previous directory
+    m = [
+        os.path.join(parent_directory, 'market_2021.csv'),
+        os.path.join(parent_directory, 'market_2022.csv'),
+        os.path.join(parent_directory, 'market_2023.csv'),
+        os.path.join(parent_directory, 'market_2024.csv'),
+    ]
+
+    market_dfs = []
+
+    for path in m:
+        df = pd.read_csv(path)
+        market_dfs.append(df)
+
+    market_raw_df = pd.concat(market_dfs, ignore_index=True)
+    market_columns_to_keep = [
+        'year',
+        'month',
+        'date',
+        'day',
+        'd_open',
+        'd_high',
+        'd_low',
+        'd_close',
+        'n_open',
+        'n_high',
+        'n_low',
+        'n_close',
+        'd_quantity',
+        'n_quantity'
+    ]
+    market_df = market_raw_df[market_columns_to_keep]
+    price_objs = []
+    for _, row in market_df.iterrows():
+        data = dict(row)
+        day_obj = {
+            'year': data['year'],
+            'month': data['month'],
+            'date': data['date'],
+            'day': data['day'],
+            'open': data['d_open'],
+            'high': data['d_high'],
+            'low': data['d_low'],
+            'close': data['d_close'],
+            'volume': data['d_quantity'],
+            'period': 'day'
+        }
+        night_obj = {
+            'year': data['year'],
+            'month': data['month'],
+            'date': data['date'],
+            'day': data['day'],
+            'open': data['n_open'],
+            'high': data['n_high'],
+            'low': data['n_low'],
+            'close': data['n_close'],
+            'volume': data['n_quantity'],
+            'period': 'night'
+        }
+        price_objs.append(night_obj)
+        price_objs.append(day_obj)
+    try:
+        if len(price_objs) > 0:
+            serializer = PriceDataSerializer(data=price_objs, many=True)
+            if serializer.is_valid():
+                PriceData.objects.bulk_create([PriceData(**item) for item in serializer.data])
+                print("Settlement date successfully saved.")
+            else:
+                print("Validation errors occurred.")
+                print(serializer.errors)
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")

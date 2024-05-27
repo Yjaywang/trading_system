@@ -137,20 +137,28 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Taipei' # set taiwan time
 
 CELERY_BEAT_SCHEDULE = {
-    'scraper-task': {
-        'task': 'core.services.tasks.scraper_task',
+    'op-scraper-task': {
+        'task': 'core.tasks.op_scraper_task',
+        'schedule': crontab(minute='0', hour='14', day_of_week='1-5'),  # Mon to Fri 14:00
+    },
+    'price-scraper-task': {
+        'task': 'core.tasks.price_scraper_task',
         'schedule': crontab(minute='0', hour='14', day_of_week='1-5'),  # Mon to Fri 14:00
     },
     'analyzer-task': {
-        'task': 'core.services.tasks.analyzer_task',
+        'task': 'core.tasks.analyzer_task',
         'schedule': crontab(minute='10', hour='14', day_of_week='1-5'), # Mon to Fri 14:10
     },
     'order-task': {
-        'task': 'core.services.tasks.order_task',
+        'task': 'core.tasks.order_task',
         'schedule': crontab(minute='0', hour='15', day_of_week='1-5'),  # Mon to Fri 15:00
     },
     'close-task': {
         'task': 'core.services.tasks.order_task',
         'schedule': crontab(minute='44', hour='13', day_of_week='1-5'), # Mon to Fri 13:44
     },
+                                                                          # 'test-task': {
+                                                                          #     'task': 'core.tasks.cron_test',
+                                                                          #     'schedule': crontab(minute='*', hour='*'),                      # every minute
+                                                                          # },
 }
