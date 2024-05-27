@@ -12,9 +12,10 @@ def run_analysis():
     try:
         latest_signal_data = Signal.objects.latest('created_at')
         is_db_no_data = False
-        serializer = SignalSerializer(latest_signal_data)
-        data = dict(serializer.data)
-        latest_date_str = data.get('date', datetime.today().strftime("%Y/%m/%d"))
+        if latest_signal_data.date:
+            print('no latest signal')
+            return
+        latest_date_str = datetime.today().strftime("%Y/%m/%d")
         latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
