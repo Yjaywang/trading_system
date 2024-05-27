@@ -1,5 +1,6 @@
 *.csv
 trding_signal.py
+*.pfx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

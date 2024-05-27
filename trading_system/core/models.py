@@ -82,19 +82,15 @@ class Signal(models.Model):
 class Order(models.Model):
     # signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Orders')
     order_id = models.AutoField(primary_key=True)
-    year = models.IntegerField()
-    month = models.IntegerField()
-    date = models.CharField(max_length=10)               # YYYY-MM-DD
-    day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
     prodcut = models.CharField(max_length=20)
     quantity = models.IntegerField()
     action = models.CharField(max_length=20)             # buy, sell, no action
-    deal_price = models.IntegerField()
+    deal_price = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True) # created time
     updated_at = models.DateTimeField(auto_now=True)     # updated time
 
     def __str__(self):
-        return f'{self.date} - {self.day} - {self.order_id}'
+        return f'{self.action} - {self.prodcut} - {self.order_id}'
 
 
 class Revenue(models.Model):

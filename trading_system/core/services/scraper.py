@@ -88,7 +88,6 @@ def run_op_scraper():
             # Sleep for 3 seconds before the next iteration
             time.sleep(3)
             current_date += timedelta(days=1)
-        push_message('ob cron test')
         if len(op_data_objs) > 0:
 
             # search for db existing date -> ['date1','date2'...]
