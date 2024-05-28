@@ -82,7 +82,7 @@ def run_analysis():
                 latest_op = OptionData.objects.filter(date__gt=formatted_target_day).order_by('date').first()
                 latest_op_data_serializer = OptionDataSerializer(latest_op)
                 latest_op_data = dict(latest_op_data_serializer.data)
-                if current_date.strftime("%Y/%m/%d") == datetime.today().strftime("%Y/%m/%d"):
+                if current_date.date() == datetime.today().date():
                     message = (
                         f"A good analsis done for you\n\n"
                         f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
