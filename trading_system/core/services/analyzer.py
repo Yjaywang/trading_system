@@ -79,18 +79,23 @@ def run_analysis():
                         print(serializer.errors)
                         # push_message(f'sync signal data validation error: {serializer.errors}')
                 current_date += timedelta(days=1)
-                message = (f"A good analsis done for you\n\n"
-                           f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                           f"2. ref_date:{signal_data_obj['ref_date']}\n"
-                           f"3. trading_signal:{signal_data_obj['trading_signal']}\n"
-                           f"4. reverse_signal:{signal_data_obj['reverse_signal']}\n"
-                           f"tw_call_count/amount: {data['tw_trade_call_count']} / {data['tw_trade_call_amount']}\n"
-                           f"tw_put_count/amount: {data['tw_trade_put_count']} / {data['tw_trade_put_amount']}\n"
-                           f"fr_call_count/amount: {data['fr_trade_call_count']} / {data['fr_trade_call_amount']}\n"
-                           f"fr_put_count/amount: {data['fr_trade_put_count']} / {data['fr_trade_put_amount']}\n"
-                           f"call_count/amount: {data['call_count']} / {data['call_amount']}\n"
-                           f"put_count/amount: {data['put_count']} / {data['put_amount']}\n")
-                push_message(message)
+                latest_op = OptionData.objects.filter(date__gt=formatted_target_day).order_by('date').first()
+                latest_op_data_serializer = OptionDataSerializer(latest_op)
+                latest_op_data = dict(latest_op_data_serializer.data)
+                if current_date.strftime("%Y/%m/%d") == datetime.today().strftime("%Y/%m/%d"):
+                    message = (
+                        f"A good analsis done for you\n\n"
+                        f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                        f"2. ref_date:{signal_data_obj['ref_date']}\n"
+                        f"3. trading_signal:{signal_data_obj['trading_signal']}\n"
+                        f"4. reverse_signal:{signal_data_obj['reverse_signal']}\n"
+                        f"tw_call_count/amount: {latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}\n"
+                        f"tw_put_count/amount: {latest_op_data['tw_trade_put_count']} / {latest_op_data['tw_trade_put_amount']}\n"
+                        f"fr_call_count/amount: {latest_op_data['fr_trade_call_count']} / {latest_op_data['fr_trade_call_amount']}\n"
+                        f"fr_put_count/amount: {latest_op_data['fr_trade_put_count']} / {latest_op_data['fr_trade_put_amount']}\n"
+                        f"call_count/amount: {latest_op_data['call_count']} / {latest_op_data['call_amount']}\n"
+                        f"put_count/amount: {latest_op_data['put_count']} / {latest_op_data['put_amount']}\n")
+                    push_message(message)
             current_date += timedelta(days=1)
     except Exception as e:
         print(f"sync signal data error: {e}")
