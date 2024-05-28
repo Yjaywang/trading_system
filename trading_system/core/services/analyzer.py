@@ -12,10 +12,10 @@ def run_analysis():
     try:
         latest_signal_data = Signal.objects.latest('created_at')
         is_db_no_data = False
-        if latest_signal_data.date:
+        if latest_signal_data.date is not None:
             print('no latest signal')
             return
-        latest_date_str = datetime.today().strftime("%Y/%m/%d")
+        latest_date_str = latest_signal_data.ref_date
         latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
@@ -91,6 +91,7 @@ def run_analysis():
                            f"call_count/amount: {data['call_count']} / {data['call_amount']}\n"
                            f"put_count/amount: {data['put_count']} / {data['put_amount']}\n")
                 push_message(message)
+            current_date += timedelta(days=1)
     except Exception as e:
         print(f"sync signal data error: {e}")
         # push_message(f'sync signal data error: {e}')

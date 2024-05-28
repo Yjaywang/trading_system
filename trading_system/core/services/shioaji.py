@@ -17,27 +17,19 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 ca_file_path = os.path.join(parent_directory, ca_file_name)
 
-api = sj.Shioaji()
-accounts = api.login(os.getenv('SHIOAJI_API_KEY') or '', os.getenv('SHIOAJI_SECRET_KEY') or '')
-api.activate_ca(
-    ca_path=ca_file_path,
-    ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD') or '',
-    person_id=os.getenv('SHIOAJI_PERSONAL_ID') or '',
-)
+
+def initialize_api():
+    api = sj.Shioaji()
+    api.login(os.getenv('SHIOAJI_API_KEY') or '', os.getenv('SHIOAJI_SECRET_KEY') or '')
+    api.activate_ca(
+        ca_path=ca_file_path,
+        ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD') or '',
+        person_id=os.getenv('SHIOAJI_PERSONAL_ID') or '',
+    )
+    return api
 
 
-def get_sell_order(quantity):
-    return api.Order(
-        action=sj.constant.Action.Sell,              # type: ignore
-        price=0,
-        quantity=quantity,
-        price_type=sj.constant.FuturesPriceType.MKP, # type: ignore
-        order_type=sj.constant.OrderType.IOC,        # type: ignore
-        octype=sj.constant.FuturesOCType.Auto,       # type: ignore
-        account=api.futopt_account)
-
-
-def get_order(action, quantity):
+def get_order(api, action, quantity):
     action = get_actio_type(action)
     if action is not None:
         return api.Order(
@@ -50,7 +42,7 @@ def get_order(action, quantity):
             account=api.futopt_account)
 
 
-def get_contract_type(contract_type):
+def get_contract_type(api, contract_type):
     return getattr(api.Contracts.Futures, contract_type, None)
 
 
@@ -62,7 +54,7 @@ def get_latest_contract(contract_type):
     return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"]], key=lambda x: x.delivery_date)
 
 
-def make_trade(contract, order):
+def make_trade(api, contract, order):
     if api.futopt_account is None:
         print("no futures account")
         return None
@@ -79,15 +71,16 @@ def record_deal(prodcut, quantity, action, deal_price):
 
 def make_deal(contract_code, action, quantity): # Buy, Sell
     try:
-        contract_type = get_contract_type(contract_code)
+        api = initialize_api()                  # Initialize the API every time
+        contract_type = get_contract_type(api, contract_code)
         contract = get_latest_contract(contract_type)
-        order = get_order(action, quantity)
-        trade = make_trade(contract, order)
+        order = get_order(api, action, quantity)
+        trade = make_trade(api, contract, order)
         if trade is not None:
             time.sleep(3)
             api.update_status(trade=trade)
 
-            dict_trade = dict(trade)                                                       # type: ignore
+            dict_trade = dict(trade)
             status = dict_trade['status']['status']
             deals = dict_trade['status']['deals']
             total_deal_price = 0
