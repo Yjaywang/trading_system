@@ -103,5 +103,9 @@ def run_analysis():
         push_message(f'sync signal data error: {e}')
 
 
+def calculate_revenue():
+    pass
+
+
 def back_test():
     pass

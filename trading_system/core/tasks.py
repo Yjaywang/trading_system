@@ -5,28 +5,43 @@ from .services.order import open_orders, close_orders
 from .services.line import push_message
 
 
-@shared_task
+@shared_task(max_retries=0)
 def op_scraper_task():
-    run_op_scraper()
-    push_message('test op scraper')
+    try:
+        run_op_scraper()
+        push_message('test op scraper')
+    except Exception as e:
+        print(f"Error in op_scraper_task: {e}")
 
 
-@shared_task
+@shared_task(max_retries=0)
 def price_scraper_task():
-    run_price_scraper()
-    push_message('test price scraper')
+    try:
+        run_price_scraper()
+        push_message('test price scraper')
+    except Exception as e:
+        print(f"Error in price_scraper_task: {e}")
 
 
-@shared_task
+@shared_task(max_retries=0)
 def analyzer_task():
-    run_analysis()
+    try:
+        run_analysis()
+    except Exception as e:
+        print(f"Error in analyzer_task: {e}")
 
 
-@shared_task
+@shared_task(max_retries=0)
 def open_position_task():
-    open_orders()
+    try:
+        open_orders()
+    except Exception as e:
+        print(f"Error in open_position_task: {e}")
 
 
-@shared_task
+@shared_task(max_retries=0)
 def close_position_task():
-    close_orders()
+    try:
+        close_orders()
+    except Exception as e:
+        print(f"Error in close_position_task: {e}")
