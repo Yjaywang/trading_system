@@ -87,8 +87,9 @@ def make_deal(contract_code, action, quantity): # Buy, Sell
                 formatted_string = (f"Make a good deal\n\n"
                                     f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
                                     f"2. product:{contract_code}\n"
-                                    f"3. avg_price:{avg_deal_price}\n"
-                                    f"4. quantity:{total_deal_quantity}")
+                                    f"3. action:{action}\n"
+                                    f"4. avg_price:{avg_deal_price}\n"
+                                    f"5. quantity:{total_deal_quantity}")
                 push_message(formatted_string)
                 return {'price': avg_deal_price, 'quantity': total_deal_quantity}
             else:
