@@ -39,7 +39,7 @@ def record_deal(deal, contract_code, action):
         push_message(message)
 
 
-def place_orders():
+def open_orders():
     try:
         latest_signal_data = Signal.objects.latest('created_at')
         serializer = SignalSerializer(latest_signal_data)

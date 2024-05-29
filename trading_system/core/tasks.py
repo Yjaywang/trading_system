@@ -1,7 +1,7 @@
 from celery import shared_task
 from .services.scraper import run_op_scraper, run_price_scraper
 from .services.analyzer import run_analysis
-from .services.order import place_orders, close_orders
+from .services.order import open_orders, close_orders
 from .services.line import push_message
 
 
@@ -23,16 +23,10 @@ def analyzer_task():
 
 
 @shared_task
-def order_task():
-    place_orders()
+def open_position_task():
+    open_orders()
 
 
 @shared_task
-def close_task():
+def close_position_task():
     close_orders()
-
-
-@shared_task
-def cron_test():
-    # push_message('cron test')
-    pass
