@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta, time as dt_time
 import pandas as pd
 from dotenv import load_dotenv
+from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, SLEEP_DURATION
 from ..models import OptionData, PriceData, Settlement
 from ..serializers import OptionDataSerializer, PriceDataSerializer, SettlementSerializer
 from ..utils.helper import post_form_data, parse_html
@@ -18,31 +19,21 @@ def run_op_scraper():
         latest_option_data = OptionData.objects.latest('created_at')
         serializer = OptionDataSerializer(latest_option_data)
         data = dict(serializer.data)
-        latest_date_str = data.get('date', datetime.today().strftime("%Y/%m/%d"))
-        latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
+        latest_date_str = data.get('date', datetime.today().strftime(DATE_FORMAT))
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date + timedelta(days=1)
     except OptionData.DoesNotExist:
         print("No OptionData found in the database.")
-        latest_date_str = datetime.today().strftime("%Y/%m/%d")
-        latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
+        latest_date_str = datetime.today().strftime(DATE_FORMAT)
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
     try:
         end_date = datetime.today()
         op_data_objs = []
-        weekday_transform = {
-            0: "Mon",
-            1: "Tue",
-            2: "Wed",
-            3: "Thu",
-            4: "Fri",
-            5: "Sat",
-            6: "Sun",
-        }
-
         current_date = start_date
         while current_date <= end_date:
-            formatted_target_day = current_date.strftime("%Y/%m/%d")
-            target_day = weekday_transform[current_date.weekday()]
+            formatted_target_day = current_date.strftime(DATE_FORMAT)
+            target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             print(formatted_target_day)
 
             op_url = f"{os.getenv('OPTION_DATA_API')}"
@@ -85,36 +76,33 @@ def run_op_scraper():
                     "put_amount": tw_trade_put_amount + fr_trade_put_amount
                 }
                 op_data_objs.append(op_data_obj)
-            # Sleep for 3 seconds before the next iteration
-            time.sleep(3)
+            time.sleep(SLEEP_DURATION)
             current_date += timedelta(days=1)
         if len(op_data_objs) > 0:
-
             # search for db existing date -> ['date1','date2'...]
             existing_data = OptionData.objects.filter(date__in=[item['date'] for item in op_data_objs]).values_list(
                 'date', flat=True)
-
             # transform a existiing set
             existing_set = set(existing_data)
-
             # filter new data
             new_data = [item for item in op_data_objs if item['date'] not in existing_set]
             if not new_data:
-                print('sync option data already exist in db')
-                push_message('sync option data already exist in db')
+                message = 'sync option data already exist in db'
+                print(message)
+                push_message(message)
                 return
-
             serializer = OptionDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 OptionData.objects.bulk_create([OptionData(**item) for item in serializer.data])
                 print("Option data successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
-                push_message(f'sync option data validation error: {serializer.errors}')
+                message = f'sync option data validation error: {serializer.errors}'
+                print(message)
+                push_message(message)
     except Exception as e:
-        print(f"sync option data error: {e}")
-        push_message(f'sync option data error: {e}')
+        message = f"sync option data error: {e}"
+        print(message)
+        push_message(message)
 
 
 def run_price_scraper():
@@ -126,8 +114,8 @@ def run_price_scraper():
         is_db_no_data = False
         serializer = PriceDataSerializer(latest_price_data)
         data = dict(serializer.data)
-        latest_date_str = data.get('date', datetime.today().strftime("%Y/%m/%d"))
-        latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
+        latest_date_str = data.get('date', datetime.today().strftime(DATE_FORMAT))
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         end_date = datetime.today()
         # normally need to end in day period
         if data.get('period', 'day') == 'night':
@@ -137,40 +125,26 @@ def run_price_scraper():
             start_date = latest_date + timedelta(days=1)
     except PriceData.DoesNotExist:
         print("No PriceData found in the database.")
-        latest_date_str = datetime.today().strftime("%Y/%m/%d")
-        latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
+        latest_date_str = datetime.today().strftime(DATE_FORMAT)
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
         end_date = datetime.today()
-
     try:
         market_data_objs = []
-        weekday_transform = {
-            0: "Mon",
-            1: "Tue",
-            2: "Wed",
-            3: "Thu",
-            4: "Fri",
-            5: "Sat",
-            6: "Sun",
-        }
         market_code_transform = {'day': 0, "night": 1}
         current_date = start_date
-
         while current_date.date() <= end_date.date():
             now_time = datetime.now()
             # Create a datetime object for today at 14:00
             today_14pm = datetime.combine(now_time.date(), dt_time(14, 0))
             market_periods = ['night', 'day']
-
-            if current_date.date() == end_date.date() and now_time < today_14pm and is_db_no_data:
-                market_periods = ['night']
-            if current_date.date() == end_date.date() and now_time < today_14pm and not is_db_no_data:
+            if current_date.date() == end_date.date() and now_time < today_14pm:
                 market_periods = ['night']
             if current_date.date() == end_date.date(
             ) and now_time >= today_14pm and not is_db_no_data and is_night_first:
                 market_periods = ['day']
-            formatted_target_day = current_date.strftime("%Y/%m/%d")
-            target_day = weekday_transform[current_date.weekday()]
+            formatted_target_day = current_date.strftime(DATE_FORMAT)
+            target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             market_url = f"{os.getenv('MARKET_PRICE_DATA_API')}"
             print(formatted_target_day)
 
@@ -206,7 +180,7 @@ def run_price_scraper():
                         'volume': int(night_volume) if market_period == 'night' else int(day_volume)
                     }
                     market_data_objs.append(market_data_obj)
-            time.sleep(3)
+            time.sleep(SLEEP_DURATION)
             current_date += timedelta(days=1)
 
         if len(market_data_objs) > 0:
@@ -214,28 +188,27 @@ def run_price_scraper():
             existing_data = PriceData.objects.filter(
                 date__in=[item['date'] for item in market_data_objs],
                 period__in=[item['period'] for item in market_data_objs]).values_list('date', 'period')
-
             # transform a existiing set
             existing_set = set(existing_data)
-
             # filter new data
             new_data = [item for item in market_data_objs if (item['date'], item['period']) not in existing_set]
             if not new_data:
-                print('sync price data already exist in db')
-                push_message(f'sync price data already exist in db')
+                message = 'sync price data already exist in db'
+                print(message)
+                push_message(message)
                 return
-
             serializer = PriceDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 PriceData.objects.bulk_create([PriceData(**item) for item in serializer.data])
                 print("Price data successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
-                push_message(f'sync price data validation error: {serializer.errors}')
+                message = f'sync price data validation error: {serializer.errors}'
+                print(message)
+                push_message(message)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        push_message(f'sync price data error: {e}')
+        message = f'sync price data error: {e}'
+        print(message)
+        push_message(message)
 
 
 def insert_settlement_date():
@@ -244,15 +217,7 @@ def insert_settlement_date():
     parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
     # Construct the path to the JSON file in the previous directory
     json_file_path = os.path.join(parent_directory, 'settlement.json')
-    weekday_transform = {
-        0: "Mon",
-        1: "Tue",
-        2: "Wed",
-        3: "Thu",
-        4: "Fri",
-        5: "Sat",
-        6: "Sun",
-    }
+
     try:
         with open(json_file_path, 'r') as json_file:
             settlement_dates = json.load(json_file)
@@ -263,7 +228,7 @@ def insert_settlement_date():
                 'year': int(pieces[0]),
                 'month': int(pieces[1]),
                 'date': settlement_date,
-                'day': weekday_transform[datetime.strptime(settlement_date, "%Y/%m/%d").weekday()]
+                'day': WEEKDAY_TRANSFORM[datetime.strptime(settlement_date, DATE_FORMAT).weekday()]
             }
             settlement_date_objs.append(settlement_date_obj)
 
@@ -272,15 +237,14 @@ def insert_settlement_date():
             existing_data = Settlement.objects.filter(
                 date__in=[item['date'] for item in settlement_date_objs]).values_list(
                     'date', flat=True)
-
             # transform a existiing set
             existing_set = set(existing_data)
-
             # filter new data
             new_data = [item for item in settlement_date_objs if item['date'] not in existing_set]
             if not new_data:
-                print('sync settlement already exist in db')
-                push_message(f'sync settlement already exist in db')
+                message = f'sync settlement already exist in db'
+                print(message)
+                push_message(message)
                 return
 
             serializer = SettlementSerializer(data=new_data, many=True)
@@ -288,21 +252,22 @@ def insert_settlement_date():
                 Settlement.objects.bulk_create([Settlement(**item) for item in serializer.data])
                 print("Settlement date successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
-                push_message(f'sync settlement validation error: {serializer.errors}')
+                message = f'sync settlement validation error: {serializer.errors}'
+                print(message)
+                push_message(message)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        push_message(f'sync settlement error: {e}')
+        message = f'sync settlement error: {e}'
+        print(message)
+        push_message(message)
 
 
 #bulk insert from csv
-def insert_op():
+def insert_init_op():
     current_directory = os.path.dirname(__file__)
     # Go up one directory level
     parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
     # Construct the path to the JSON file in the previous directory
-    o = [
+    csv_paths = [
         os.path.join(parent_directory, 'op_2021.csv'),
         os.path.join(parent_directory, 'op_2022.csv'),
         os.path.join(parent_directory, 'op_2023.csv'),
@@ -310,12 +275,11 @@ def insert_op():
     ]
 
     option_dfs = []
-    for path in o:
+    for path in csv_paths:
         df = pd.read_csv(path)
         option_dfs.append(df)
 
     option_raw_df = pd.concat(option_dfs, ignore_index=True)
-
     option_columns_to_keep = [
         'year',
         'month',
@@ -335,10 +299,7 @@ def insert_op():
         'put_amount'
     ]
     option_df = option_raw_df[option_columns_to_keep]
-    option_objs = []
-    for _, row in option_df.iterrows():
-        data = dict(row)
-        option_objs.append(data)
+    option_objs = [dict(row) for _, row in option_df.iterrows()]
     try:
         if len(option_objs) > 0:
             serializer = OptionDataSerializer(data=option_objs, many=True)
@@ -353,21 +314,19 @@ def insert_op():
         print(f"An unexpected error occurred: {e}")
 
 
-def insert_price():
+def insert_init_price():
     current_directory = os.path.dirname(__file__)
     # Go up one directory level
     parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
     # Construct the path to the JSON file in the previous directory
-    m = [
+    csv_paths = [
         os.path.join(parent_directory, 'market_2021.csv'),
         os.path.join(parent_directory, 'market_2022.csv'),
         os.path.join(parent_directory, 'market_2023.csv'),
         os.path.join(parent_directory, 'market_2024.csv'),
     ]
-
     market_dfs = []
-
-    for path in m:
+    for path in csv_paths:
         df = pd.read_csv(path)
         market_dfs.append(df)
 

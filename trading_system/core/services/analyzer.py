@@ -5,6 +5,7 @@ from ..serializers import OptionDataSerializer, PriceDataSerializer, SignalSeria
 from ..utils.trding_signal import trading_signal_v1, reverse_signal_v1, settlement_signal_v1
 from datetime import datetime, timedelta, time as dt_time
 from .line import push_message
+from ..utils.constants import DATE_FORMAT
 
 
 def run_analysis():
@@ -16,18 +17,18 @@ def run_analysis():
             print('no latest signal')
             return
         latest_date_str = latest_signal_data.ref_date
-        latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
         print("No SingalData found in the database.")
-        latest_date_str = datetime.today().strftime("%Y/%m/%d")
-        latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
+        latest_date_str = datetime.today().strftime(DATE_FORMAT)
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
     try:
         end_date = datetime.today()
         current_date = start_date
         while current_date <= end_date:
-            formatted_target_day = current_date.strftime("%Y/%m/%d")
+            formatted_target_day = current_date.strftime(DATE_FORMAT)
             print(formatted_target_day)
 
             option_data = OptionData.objects.filter(date=formatted_target_day)
