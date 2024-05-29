@@ -81,6 +81,10 @@ class Signal(models.Model):
 
 class Order(models.Model):
     # signal_data = models.ForeignKey(Signal, on_delete=models.CASCADE, related_name='Orders')
+    year = models.IntegerField()
+    month = models.IntegerField()
+    date = models.CharField(max_length=10)               # YYYY-MM-DD
+    day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
     order_id = models.AutoField(primary_key=True)
     prodcut = models.CharField(max_length=20)
     quantity = models.IntegerField()

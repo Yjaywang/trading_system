@@ -20,7 +20,8 @@ def run_analysis():
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
         print("No SingalData found in the database.")
-        latest_date_str = datetime.today().strftime("%Y/%m/%d")
+        # latest_date_str = datetime.today().strftime("%Y/%m/%d")
+        latest_date_str = '2021/06/01'
         latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
         start_date = latest_date
     try:
@@ -77,8 +78,7 @@ def run_analysis():
                     else:
                         print("Validation errors occurred.")
                         print(serializer.errors)
-                        # push_message(f'sync signal data validation error: {serializer.errors}')
-                current_date += timedelta(days=1)
+                        push_message(f'sync signal data validation error: {serializer.errors}')
                 latest_op = OptionData.objects.filter(date__gt=formatted_target_day).order_by('date').first()
                 latest_op_data_serializer = OptionDataSerializer(latest_op)
                 latest_op_data = dict(latest_op_data_serializer.data)
@@ -99,7 +99,7 @@ def run_analysis():
             current_date += timedelta(days=1)
     except Exception as e:
         print(f"sync signal data error: {e}")
-        # push_message(f'sync signal data error: {e}')
+        push_message(f'sync signal data error: {e}')
 
 
 def back_test():

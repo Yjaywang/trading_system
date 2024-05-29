@@ -62,13 +62,6 @@ def make_trade(api, contract, order):
         return api.place_order(contract, order, timeout=0)
 
 
-def record_deal(prodcut, quantity, action, deal_price):
-    data = {'prodcut': prodcut, 'quantity': quantity, 'action': action, 'deal_price': deal_price}
-    serializer = OrderSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-
-
 def make_deal(contract_code, action, quantity): # Buy, Sell
     try:
         api = initialize_api()                  # Initialize the API every time
@@ -77,7 +70,7 @@ def make_deal(contract_code, action, quantity): # Buy, Sell
         order = get_order(api, action, quantity)
         trade = make_trade(api, contract, order)
         if trade is not None:
-            time.sleep(3)
+            time.sleep(5)
             api.update_status(trade=trade)
 
             dict_trade = dict(trade)
@@ -91,15 +84,18 @@ def make_deal(contract_code, action, quantity): # Buy, Sell
                     total_deal_price += int(deal['price'] * deal['quantity'])
                     total_deal_quantity += deal['quantity']
                 avg_deal_price = total_deal_price / total_deal_quantity
-                record_deal(contract_code, quantity, action, avg_deal_price)
                 formatted_string = (f"Make a good deal\n\n"
                                     f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
                                     f"2. product:{contract_code}\n"
-                                    f"3. price:{avg_deal_price}\n"
+                                    f"3. avg_price:{avg_deal_price}\n"
                                     f"4. quantity:{total_deal_quantity}")
                 push_message(formatted_string)
+                return {'price': avg_deal_price, 'quantity': total_deal_quantity}
             else:
                 push_message('Trade is not Filled.')
+                return None
+        return None
     except Exception as e:
-        print(f"make deal error: {e}")
+        print(f"Make deal error: {e}")
         push_message(f"Make deal error: {e}")
+        return None
