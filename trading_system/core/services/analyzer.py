@@ -20,8 +20,7 @@ def run_analysis():
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
         print("No SingalData found in the database.")
-        # latest_date_str = datetime.today().strftime("%Y/%m/%d")
-        latest_date_str = '2021/06/01'
+        latest_date_str = datetime.today().strftime("%Y/%m/%d")
         latest_date = datetime.strptime(latest_date_str, "%Y/%m/%d")
         start_date = latest_date
     try:
