@@ -45,3 +45,8 @@ def close_position_task():
         close_orders()
     except Exception as e:
         print(f"Error in close_position_task: {e}")
+
+
+@shared_task(max_retries=0)
+def cron_test():
+    push_message('cron test')
