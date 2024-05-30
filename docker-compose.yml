@@ -10,7 +10,7 @@ services:
     build: .
     image: trading_system_image
     working_dir: /trading_system/trading_system
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver
     volumes:
       - .:/trading_system
     ports:
@@ -18,32 +18,32 @@ services:
     depends_on:
       - redis
 
-  celery_worker:
-    image: trading_system_image
-    working_dir: /trading_system/trading_system
-    command: celery -A trading_system worker --loglevel=info
-    volumes:
-      - .:/trading_system
-    depends_on:
-      - redis
-      - web
+  # celery_worker:
+  #   image: trading_system_image
+  #   working_dir: /trading_system/trading_system
+  #   command: celery -A trading_system worker --loglevel=info
+  #   volumes:
+  #     - .:/trading_system
+  #   depends_on:
+  #     - redis
+  #     - web
 
-  celery_beat:
-    image: trading_system_image
-    working_dir: /trading_system/trading_system
-    command: celery -A trading_system beat --loglevel=info
-    volumes:
-      - .:/trading_system
-    depends_on:
-      - redis
-      - web
+  # celery_beat:
+  #   image: trading_system_image
+  #   working_dir: /trading_system/trading_system
+  #   command: celery -A trading_system beat --loglevel=info
+  #   volumes:
+  #     - .:/trading_system
+  #   depends_on:
+  #     - redis
+  #     - web
 
-  flower:
-    image: trading_system_image
-    working_dir: /trading_system/trading_system
-    command: celery -A trading_system flower --port=5555 --broker=redis://redis:6379/0
-    ports:
-      - "5555:5555"
-    depends_on:
-      - redis
-      - web
+  # flower:
+  #   image: trading_system_image
+  #   working_dir: /trading_system/trading_system
+  #   command: celery -A trading_system flower --port=5555 --broker=redis://redis:6379/0
+  #   ports:
+  #     - "5555:5555"
+  #   depends_on:
+  #     - redis
+  #     - web
