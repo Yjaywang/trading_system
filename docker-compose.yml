@@ -5,8 +5,13 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '256M'
 
-  web:
+  app:
     build: .
     image: trading_system_image
     working_dir: /trading_system/trading_system
@@ -17,6 +22,11 @@ services:
       - "8000:8000"
     depends_on:
       - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '512M'
 
   celery_worker:
     image: trading_system_image
@@ -26,7 +36,12 @@ services:
       - .:/trading_system
     depends_on:
       - redis
-      - web
+      - app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '512M'
 
   celery_beat:
     image: trading_system_image
@@ -36,7 +51,12 @@ services:
       - .:/trading_system
     depends_on:
       - redis
-      - web
+      - app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '256M'
 
   flower:
     image: trading_system_image
@@ -46,4 +66,9 @@ services:
       - "5555:5555"
     depends_on:
       - redis
-      - web
+      - app
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '256M'
