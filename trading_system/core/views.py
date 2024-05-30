@@ -6,10 +6,10 @@ import core.serializers as serializers
 from rest_framework import status
 import json
 from .services.line import push_message
-from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date
+from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price
 from .services.analyzer import run_analysis
 from .services.order import open_orders, close_orders
-from .services.shioaji import open_position
+from .services.shioaji import open_position, close_position
 
 
 @api_view()
@@ -19,7 +19,8 @@ def view_dtl(request):
 
 @api_view(['POST'])
 def test(request):
-    open_position("MXF", "Sell", 1)
+    # open_orders()
+    close_orders()
     return Response('')
 
 

@@ -16,3 +16,7 @@ python manage.py runserver
 
 docker-compose build
 docker-compose up -d
+
+
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+find . -path "*/migrations/*.pyc"  -delete

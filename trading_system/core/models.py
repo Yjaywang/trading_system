@@ -86,7 +86,7 @@ class Order(models.Model):
     date = models.CharField(max_length=10)               # YYYY-MM-DD
     day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
     order_id = models.AutoField(primary_key=True)
-    prodcut = models.CharField(max_length=20)
+    product = models.CharField(max_length=20)
     quantity = models.IntegerField()
     action = models.CharField(max_length=20)             # buy, sell, no action
     deal_price = models.FloatField()
@@ -94,7 +94,7 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)     # updated time
 
     def __str__(self):
-        return f'{self.action} - {self.prodcut} - {self.order_id}'
+        return f'{self.action} - {self.product} - {self.order_id}'
 
 
 class Revenue(models.Model):
@@ -105,12 +105,13 @@ class Revenue(models.Model):
     month = models.IntegerField()
     date = models.CharField(max_length=10)               # YYYY-MM-DD
     day = models.CharField(max_length=10)                # Mon, Tue, Wed, Thu, Fri
-    prodcut = models.CharField(max_length=20)
+    product = models.CharField(max_length=20)
     quantity = models.IntegerField()
-    action = models.CharField(max_length=20)             # buy, sell, no action
-    open_price = models.IntegerField()
-    close_price = models.IntegerField()
-    revenue = models.IntegerField()
+    direction = models.CharField(max_length=20)          # buy, sell, no action
+    open_price = models.FloatField()
+    close_price = models.FloatField()
+    diff_price = models.FloatField()
+    revenue = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True) # created time
     updated_at = models.DateTimeField(auto_now=True)     # updated time
 

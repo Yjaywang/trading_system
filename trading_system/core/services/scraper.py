@@ -140,9 +140,6 @@ def run_price_scraper():
             market_periods = ['night', 'day']
             if current_date.date() == end_date.date() and now_time < today_14pm:
                 market_periods = ['night']
-            if current_date.date() == end_date.date(
-            ) and now_time >= today_14pm and not is_db_no_data and is_night_first:
-                market_periods = ['day']
             formatted_target_day = current_date.strftime(DATE_FORMAT)
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             market_url = f"{os.getenv('MARKET_PRICE_DATA_API')}"

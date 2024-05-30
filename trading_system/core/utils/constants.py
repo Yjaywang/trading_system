@@ -9,3 +9,5 @@ WEEKDAY_TRANSFORM = {
     6: "Sun",
 }
 SLEEP_DURATION = 3
+
+POINT_VALUE = {"TXF": 200, "MXF": 50}

@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 from ..models import Signal, Order
-from ..serializers import OrderSerializer, SignalSerializer
-from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT
+from ..serializers import OrderSerializer, SignalSerializer, RevenueSerializer
+from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE
 from .line import push_message
 from .shioaji import open_position, close_position
 from dotenv import load_dotenv
@@ -37,6 +37,39 @@ def record_deal(deal, contract_code, action):
         message = f"Order serialization failed: {serializer.errors}"
         print(message)
         push_message(message)
+
+
+def record_revenue(deal, contract_code, action):
+    today_date_str, date_pieces, today_day = get_today_date_info()
+    cost_price = deal["cost_price"]
+    price = deal["price"]
+    quantity = deal["quantity"]
+    direction = "Buy" if action == "Sell" else "Sell"
+    diff_price = price - cost_price
+    revenue = diff_price * quantity * POINT_VALUE[
+        contract_code] if direction == "Buy" else -1 * diff_price * quantity * POINT_VALUE[contract_code]
+    revenue_data_obj = {
+        "year": date_pieces[0],
+        "month": date_pieces[1],
+        "date": today_date_str,
+        "day": today_day,
+        "product": contract_code,
+        "quantity": quantity,
+        "direction": direction,
+        "open_price": cost_price,
+        "close_price": price,
+        "diff_price": diff_price,
+        "revenue": revenue
+    }
+    serializer = RevenueSerializer(data=revenue_data_obj)
+    if serializer.is_valid():
+        serializer.save()
+        return revenue_data_obj
+    else:
+        message = f"Revenue serialization failed: {serializer.errors}"
+        print(message)
+        push_message(message)
+        return None
 
 
 def open_orders():
@@ -78,6 +111,17 @@ def close_orders():
         if deal_result is not None:
             action = deal_result['action']
             record_deal(deal_result, contract_code, action)
+            revenue_data = record_revenue(deal_result, contract_code, action)
+            if revenue_data is not None:
+                formatted_string = (f"Today's revenue:\n\n"
+                                    f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                                    f"2. product: {contract_code}\n"
+                                    f"3. direction: {revenue_data['direction']}\n"
+                                    f"4. open_price: {revenue_data['direction']}\n"
+                                    f"5. close_price: {revenue_data['open_price']}\n"
+                                    f"6. revenue: {revenue_data['revenue']}\n"
+                                    f"7. quantity: {revenue_data['quantity']}")
+                push_message(formatted_string)
         else:
             message = 'Deal is in trouble, please check your account'
             print(message)

@@ -143,7 +143,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'price-scraper-task': {
         'task': 'core.tasks.price_scraper_task',
-        'schedule': crontab(minute='0', hour='14', day_of_week='1-5'),  # Mon to Fri 14:00
+        'schedule': crontab(minute='5', hour='14', day_of_week='1-5'),  # Mon to Fri 14:05
     },
     'analyzer-task': {
         'task': 'core.tasks.analyzer_task',

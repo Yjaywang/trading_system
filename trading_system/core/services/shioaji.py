@@ -67,7 +67,6 @@ def get_current_position(api):
 
 
 def update_trade_status(api: sj.Shioaji, trade):
-    time.sleep(SLEEP_DURATION)
     api.update_status(trade=trade)
     return dict(trade)
 
@@ -101,6 +100,7 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         contract = get_latest_contract(contract_type)
         order = get_order(api, action, quantity)
         trade = make_a_deal(api, contract, order)
+        time.sleep(30)
         if trade is not None:
             updated_trade = update_trade_status(api, trade)
             return process_deal(updated_trade, contract_code, action)
@@ -116,6 +116,7 @@ def close_position(contract_code):
     try:
         action = ""
         quantity = 0
+        cost_price = 0
         api = initialize_api() # Initialize the API every time
         contract_type = get_contract_type(api, contract_code)
         current_position = get_current_position(api)
@@ -128,7 +129,8 @@ def close_position(contract_code):
             data = dict(position)
             if contract_code in data['code']:
                 action = {'Sell': 'Buy', 'Buy': 'Sell'}.get(data['direction'], '')
-                quantity = data['quantity']
+                quantity = data.get('quantity', 0)
+                cost_price = data.get('price', 0)
                 break
         if not action or not quantity:
             message = 'No matching position found'
@@ -139,8 +141,12 @@ def close_position(contract_code):
         order = get_order(api, action, quantity)
         trade = make_a_deal(api, contract, order)
         if trade:
+            time.sleep(30)
             updated_trade = update_trade_status(api, trade)
-            return process_deal(updated_trade, contract_code, action)
+            deal_result = process_deal(updated_trade, contract_code, action)
+            if deal_result is not None:
+                deal_result['cost_price'] = cost_price
+                return deal_result
         return None
     except Exception as e:
         message = f"Close position error: {e}"
