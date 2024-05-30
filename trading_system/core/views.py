@@ -8,7 +8,7 @@ import json
 from .services.line import push_message
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date
 from .services.analyzer import run_analysis
-from .services.order import open_orders
+from .services.order import open_orders, close_orders
 from .services.shioaji import open_position
 
 
