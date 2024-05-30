@@ -10,7 +10,7 @@ services:
     build: .
     image: trading_system_image
     working_dir: /trading_system/trading_system
-    command: python manage.py runserver
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/trading_system
     ports:
