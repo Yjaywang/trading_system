@@ -157,20 +157,11 @@ def close_position(contract_code):
         api.logout()
 
 
-def test_position(contract_code):
+def login_cron():
     try:
-        action = ""
-        quantity = 0
-        cost_price = 0
         api = initialize_api()
-        contract_type = get_contract_type(api, contract_code)
-        current_position = get_current_position(api)
-        print(current_position)
         return None
-    except Exception as e:
-        message = f"Close position error:{e}"
-        print(message)
-        push_message(message)
+    except Exception:
         return None
     finally:
         api.logout()
