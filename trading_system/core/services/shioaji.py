@@ -19,14 +19,23 @@ ca_file_path = os.path.join(parent_directory, ca_file_name)
 
 
 def initialize_api():
-    api = sj.Shioaji()
-    api.login(os.getenv('SHIOAJI_API_KEY', ''), os.getenv('SHIOAJI_SECRET_KEY', ''))
-    api.activate_ca(
-        ca_path=ca_file_path,
-        ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
-        person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
-    )
-    return api
+    try:
+        api = sj.Shioaji()
+        api.login(os.getenv('SHIOAJI_API_KEY', ''), os.getenv('SHIOAJI_SECRET_KEY', ''))
+        api.activate_ca(
+            ca_path=ca_file_path,
+            ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
+            person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
+        )
+        return api
+    except Exception as e:
+        time.sleep(10)
+        api.activate_ca(
+            ca_path=ca_file_path,
+            ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
+            person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
+        )
+        return api
 
 
 def get_order(api, action, quantity):
@@ -106,7 +115,7 @@ def open_position(contract_code, action, quantity): # Buy, Sell
             return process_deal(updated_trade, contract_code, action)
         return None
     except Exception as e:
-        message = f"Open position error: {e}"
+        message = f"Open position error"
         print(message)
         push_message(message)
         return None
@@ -118,8 +127,11 @@ def close_position(contract_code):
         quantity = 0
         cost_price = 0
         api = initialize_api() # Initialize the API every time
+        print('-------------------------------test1-------------------------------')
         contract_type = get_contract_type(api, contract_code)
+        print('-------------------------------test2-------------------------------')
         current_position = get_current_position(api)
+        print('-------------------------------test3-------------------------------')
         if not current_position:
             message = "No position in account"
             print(message)
@@ -149,7 +161,7 @@ def close_position(contract_code):
                 return deal_result
         return None
     except Exception as e:
-        message = f"Close position error: {e}"
+        message = f"Close position error:{e}"
         print(message)
         push_message(message)
         return None
