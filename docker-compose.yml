@@ -16,7 +16,7 @@ services:
     build: .
     image: trading_system_image
     working_dir: /trading_system/trading_system
-    command: /bin/bash -c "python manage.py runserver 0.0.0.0:8000 & celery -A trading_system worker --loglevel=info & celery -A trading_system beat --loglevel=info & celery -A trading_system flower --port=5555 --broker=redis://redis:6379/0"
+    command: /bin/bash -c "python manage.py runserver 0.0.0.0:8000 & celery -A trading_system worker --loglevel=info & celery -A trading_system beat --loglevel=info & celery -A trading_system flower --port=5555"
     volumes:
       - .:/trading_system
     ports:
@@ -28,5 +28,5 @@ services:
       resources:
         limits:
           cpus: '1.5'
-          memory: '3G'
+          memory: '1.5G'
     restart: always

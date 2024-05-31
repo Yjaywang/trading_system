@@ -98,7 +98,7 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         contract = get_latest_contract(contract_type)
         order = get_order(api, action, quantity)
         trade = make_a_deal(api, contract, order)
-        time.sleep(30)
+        time.sleep(10)
         if trade is not None:
             updated_trade = update_trade_status(api, trade)
             return process_deal(updated_trade, contract_code, action)
@@ -118,11 +118,9 @@ def close_position(contract_code):
         quantity = 0
         cost_price = 0
         api = initialize_api()
-        print('----------------debug line 1--------------------------------')
         contract_type = get_contract_type(api, contract_code)
-        print('----------------debug line 2--------------------------------')
+        time.sleep(5)
         current_position = get_current_position(api)
-        print('----------------debug line 3--------------------------------')
         if not current_position:
             message = "No position in account"
             print(message)
@@ -141,15 +139,11 @@ def close_position(contract_code):
             push_message(message)
             return None
         contract = get_latest_contract(contract_type)
-        print('----------------debug line 4--------------------------------')
         order = get_order(api, action, quantity)
-        print('----------------debug line 5--------------------------------')
         trade = make_a_deal(api, contract, order)
-        print('----------------debug line 6--------------------------------')
         if trade:
-            time.sleep(30)
+            time.sleep(10)
             updated_trade = update_trade_status(api, trade)
-            print('----------------debug line 7--------------------------------')
             deal_result = process_deal(updated_trade, contract_code, action)
             if deal_result is not None:
                 deal_result['cost_price'] = cost_price
