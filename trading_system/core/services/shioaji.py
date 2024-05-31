@@ -61,7 +61,7 @@ def make_a_deal(api, contract, order):
 
 
 def get_current_position(api):
-    return api.list_positions(account=api.futopt_account, timeout=20)
+    return api.list_positions(api.futopt_account)
 
 
 def update_trade_status(api: sj.Shioaji, trade):
