@@ -102,9 +102,9 @@ def process_deal(trade, contract_code, action):
         return None
 
 
-def open_position(contract_code, action, quantity): # Buy, Sell
+def open_position(contract_code, action, quantity):    # Buy, Sell
     try:
-        api = initialize_api()                      # Initialize the API every time
+        api = initialize_api()                         # Initialize the API every time
         contract_type = get_contract_type(api, contract_code)
         contract = get_latest_contract(contract_type)
         order = get_order(api, action, quantity)
@@ -119,6 +119,8 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         print(message)
         push_message(message)
         return None
+    finally:
+        del api, contract, order, trade, updated_trade # release memory
 
 
 def close_position(contract_code):
@@ -126,7 +128,7 @@ def close_position(contract_code):
         action = ""
         quantity = 0
         cost_price = 0
-        api = initialize_api() # Initialize the API every time
+        api = initialize_api()                                                          # Initialize the API every time
         print('-------------------------------test1-------------------------------')
         contract_type = get_contract_type(api, contract_code)
         print('-------------------------------test2-------------------------------')
@@ -165,3 +167,5 @@ def close_position(contract_code):
         print(message)
         push_message(message)
         return None
+    finally:
+        del api, contract_type, current_position, contract, order, trade, updated_trade # release memory
