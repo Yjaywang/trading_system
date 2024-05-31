@@ -164,7 +164,7 @@ def close_position(contract_code):
 def login_cron():
     try:
         api = initialize_api()
-        get_current_position(api)
+        current_position = get_current_position(api)
         return None
     except Exception:
         return None
