@@ -10,6 +10,7 @@ services:
         limits:
           cpus: '0.25'
           memory: '256M'
+    restart: always
 
   app:
     build: .
@@ -27,6 +28,7 @@ services:
         limits:
           cpus: '0.5'
           memory: '512M'
+    restart: always
 
   celery_worker:
     image: trading_system_image
@@ -42,6 +44,7 @@ services:
         limits:
           cpus: '0.5'
           memory: '512M'
+    restart: always
 
   celery_beat:
     image: trading_system_image
@@ -57,6 +60,7 @@ services:
         limits:
           cpus: '0.25'
           memory: '256M'
+    restart: always
 
   flower:
     image: trading_system_image
@@ -72,3 +76,4 @@ services:
         limits:
           cpus: '0.25'
           memory: '256M'
+    restart: always

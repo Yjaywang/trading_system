@@ -115,11 +115,12 @@ def close_orders():
                 formatted_string = (f"Today's revenue:\n\n"
                                     f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
                                     f"2. product: {contract_code}\n"
-                                    f"3. direction: {revenue_data['direction']}\n"
-                                    f"4. open_price: {revenue_data['direction']}\n"
-                                    f"5. close_price: {revenue_data['open_price']}\n"
-                                    f"6. revenue: {revenue_data['revenue']}\n"
-                                    f"7. quantity: {revenue_data['quantity']}")
+                                    f"3. quantity: {revenue_data['quantity']}\n"
+                                    f"4. direction: {revenue_data['direction']}\n"
+                                    f"5. open_price: {revenue_data['open_price']}\n"
+                                    f"6. close_price: {revenue_data['close_price']}\n"
+                                    f"7. gain_price: {revenue_data['gain_price']}\n"
+                                    f"8. revenue: {revenue_data['revenue']}\n")
                 push_message(formatted_string)
         else:
             message = 'Deal is in trouble, please check your account'
