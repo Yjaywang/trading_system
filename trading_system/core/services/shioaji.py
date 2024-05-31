@@ -2,11 +2,8 @@ import shioaji as sj
 import os
 import time
 from dotenv import load_dotenv
-from ..models import Order
-from ..serializers import OrderSerializer
 from .line import push_message
 from datetime import datetime
-from ..utils.constants import SLEEP_DURATION
 
 load_dotenv()
 
@@ -19,23 +16,14 @@ ca_file_path = os.path.join(parent_directory, ca_file_name)
 
 
 def initialize_api():
-    try:
-        api = sj.Shioaji()
-        api.login(os.getenv('SHIOAJI_API_KEY', ''), os.getenv('SHIOAJI_SECRET_KEY', ''))
-        api.activate_ca(
-            ca_path=ca_file_path,
-            ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
-            person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
-        )
-        return api
-    except Exception as e:
-        time.sleep(10)
-        api.activate_ca(
-            ca_path=ca_file_path,
-            ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
-            person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
-        )
-        return api
+    api = sj.Shioaji(simulation=(os.getenv('APP_ENV') != 'production'))
+    api.login(os.getenv('SHIOAJI_API_KEY', ''), os.getenv('SHIOAJI_SECRET_KEY', ''))
+    api.activate_ca(
+        ca_path=ca_file_path,
+        ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
+        person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
+    )
+    return api
 
 
 def get_order(api, action, quantity):
@@ -102,9 +90,9 @@ def process_deal(trade, contract_code, action):
         return None
 
 
-def open_position(contract_code, action, quantity):    # Buy, Sell
+def open_position(contract_code, action, quantity): # Buy, Sell
     try:
-        api = initialize_api()                         # Initialize the API every time
+        api = initialize_api()
         contract_type = get_contract_type(api, contract_code)
         contract = get_latest_contract(contract_type)
         order = get_order(api, action, quantity)
@@ -120,7 +108,7 @@ def open_position(contract_code, action, quantity):    # Buy, Sell
         push_message(message)
         return None
     finally:
-        del api, contract, order, trade, updated_trade # release memory
+        api.logout()
 
 
 def close_position(contract_code):
@@ -128,12 +116,9 @@ def close_position(contract_code):
         action = ""
         quantity = 0
         cost_price = 0
-        api = initialize_api()                                                          # Initialize the API every time
-        print('-------------------------------test1-------------------------------')
+        api = initialize_api()
         contract_type = get_contract_type(api, contract_code)
-        print('-------------------------------test2-------------------------------')
         current_position = get_current_position(api)
-        print('-------------------------------test3-------------------------------')
         if not current_position:
             message = "No position in account"
             print(message)
@@ -168,4 +153,23 @@ def close_position(contract_code):
         push_message(message)
         return None
     finally:
-        del api, contract_type, current_position, contract, order, trade, updated_trade # release memory
+        api.logout()
+
+
+def test_position(contract_code):
+    try:
+        action = ""
+        quantity = 0
+        cost_price = 0
+        api = initialize_api()
+        contract_type = get_contract_type(api, contract_code)
+        current_position = get_current_position(api)
+        print(current_position)
+        return None
+    except Exception as e:
+        message = f"Close position error:{e}"
+        print(message)
+        push_message(message)
+        return None
+    finally:
+        api.logout()
