@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import view_dtl, option_data_list, op_scraper, price_scraper, settlement, test, analysis, order
+from .views import view_dtl, op_scraper, price_scraper, settlement, test, analysis, order, init_op_price
 
 urlpatterns = [
     path('', view_dtl, name='execute_back_test_task'),
@@ -8,5 +8,6 @@ urlpatterns = [
     path('price', price_scraper, name='update_price_table'),
     path('settlement', settlement, name='insert_settlement'),
     path('analysis', analysis, name='analysis_signal'),
-    path('order', order, name='order')
+    path('order', order, name='order'),
+    path('init', init_op_price, name='init')
 ]

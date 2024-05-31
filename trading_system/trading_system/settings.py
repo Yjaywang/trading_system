@@ -155,7 +155,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'close-task': {
         'task': 'core.tasks.close_position_task',
-        'schedule': crontab(minute='40', hour='13', day_of_week='1-5'), # Mon to Fri 13:40
+        'schedule': crontab(minute='43', hour='13', day_of_week='1-5'), # Mon to Fri 13:43
     },
                                                                           # 'cron-task': {
                                                                           #     'task': 'core.tasks.cron_test',
