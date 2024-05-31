@@ -27,9 +27,6 @@ def initialize_api():
     return api
 
 
-initialize_api()
-
-
 def get_order(api, action, quantity):
     action = get_action_type(action)
     if action is not None:
