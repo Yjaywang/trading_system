@@ -61,11 +61,7 @@ def make_a_deal(api, contract, order):
 
 
 def get_current_position(api):
-    if api.futopt_account is None:
-        print("no futures account")
-        return None
-    else:
-        return api.list_positions(api.futopt_account)
+    return api.list_positions(account=api.futopt_account, timeout=20)
 
 
 def update_trade_status(api: sj.Shioaji, trade):
