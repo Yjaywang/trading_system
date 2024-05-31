@@ -18,19 +18,14 @@ ca_file_path = os.path.join(parent_directory, ca_file_name)
 class ShioajiAPI:
 
     def __init__(self):
-        self.api = sj.Shioaji()
+        self.api = sj.Shioaji(simulation=(os.getenv('APP_ENV') != 'production'))
 
     def initialize_api(self):
-        try:
-            self.api.login(os.getenv('SHIOAJI_API_KEY', ''), os.getenv('SHIOAJI_SECRET_KEY', ''))
-            self.api.activate_ca(
-                ca_path=ca_file_path,
-                ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
-                person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
-            )
-        except Exception as e:
-            print(f"Error during API initialization: {e}")
-            time.sleep(10)
+        if self.api is not None:
+            self.api.login(
+                api_key=os.getenv('SHIOAJI_API_KEY', ''),
+                secret_key=os.getenv('SHIOAJI_SECRET_KEY', ''),
+                receive_window=60000)
             self.api.activate_ca(
                 ca_path=ca_file_path,
                 ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
@@ -40,47 +35,44 @@ class ShioajiAPI:
     def close(self):
         if self.api is not None:
             self.api.logout()
-            self.api = sj.Shioaji()
+            self.api = None
 
     @staticmethod
     def get_action_type(action_type):
         return getattr(sj.constant.Action, action_type, None) # type: ignore
 
     def get_order(self, action, quantity):
-        action = ShioajiAPI.get_action_type(action)
-        if action is not None:
-            return self.api.Order(
-                action=action,
-                price=0,
-                quantity=quantity,
-                price_type=sj.constant.FuturesPriceType.MKP, # type: ignore
-                order_type=sj.constant.OrderType.IOC,        # type: ignore
-                octype=sj.constant.FuturesOCType.Auto,       # type: ignore
-                account=self.api.futopt_account)
+        if self.api is not None:
+            action = ShioajiAPI.get_action_type(action)
+            if action is not None:
+                return self.api.Order(
+                    action=action,
+                    price=0,
+                    quantity=quantity,
+                    price_type=sj.constant.FuturesPriceType.MKP, # type: ignore
+                    order_type=sj.constant.OrderType.IOC,        # type: ignore
+                    octype=sj.constant.FuturesOCType.Auto,       # type: ignore
+                    account=self.api.futopt_account)
 
     def get_contract_type(self, contract_type):
-        return getattr(self.api.Contracts.Futures, contract_type, None)
+        if self.api is not None:
+            return getattr(self.api.Contracts.Futures, contract_type, None)
 
     def get_latest_contract(self, contract_type):
         return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"]], key=lambda x: x.delivery_date)
 
     def make_a_deal(self, contract, order):
-        if self.api.futopt_account is None:
-            print("No futures account")
-            return None
-        else:
+        if self.api is not None:
             return self.api.place_order(contract, order, timeout=0)
 
     def get_current_position(self):
-        if self.api.futopt_account is None:
-            print("No futures account")
-            return None
-        else:
+        if self.api is not None and self.api.futopt_account:
             return self.api.list_positions(self.api.futopt_account)
 
     def update_trade_status(self, trade):
-        self.api.update_status(trade=trade)
-        return dict(trade)
+        if self.api is not None:
+            self.api.update_status(trade=trade)
+            return dict(trade)
 
 
 def process_deal(trade, contract_code, action):
