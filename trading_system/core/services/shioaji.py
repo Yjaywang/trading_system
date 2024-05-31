@@ -17,7 +17,8 @@ ca_file_path = os.path.join(parent_directory, ca_file_name)
 
 def initialize_api():
     api = sj.Shioaji(simulation=(os.getenv('APP_ENV') != 'production'))
-    api.login(os.getenv('SHIOAJI_API_KEY', ''), os.getenv('SHIOAJI_SECRET_KEY', ''))
+    api.login(
+        api_key=os.getenv('SHIOAJI_API_KEY', ''), secret_key=os.getenv('SHIOAJI_SECRET_KEY', ''), receive_window=60000)
     api.activate_ca(
         ca_path=ca_file_path,
         ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
