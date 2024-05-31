@@ -4,7 +4,7 @@ from ..models import Signal, Order
 from ..serializers import OrderSerializer, SignalSerializer, RevenueSerializer
 from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE
 from .line import push_message
-from .shioaji import open_position, close_position
+from .shioaji_v2 import open_position, close_position
 from dotenv import load_dotenv
 
 load_dotenv()

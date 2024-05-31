@@ -9,7 +9,7 @@ from .services.line import push_message
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price
 from .services.analyzer import run_analysis
 from .services.order import open_orders, close_orders
-from .services.shioaji_v2 import open_position, close_position
+from .services.shioaji import open_position, close_position
 
 
 @api_view()
