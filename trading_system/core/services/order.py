@@ -45,9 +45,8 @@ def record_revenue(deal, contract_code, action):
     price = deal["price"]
     quantity = deal["quantity"]
     direction = "Buy" if action == "Sell" else "Sell"
-    diff_price = price - cost_price
-    revenue = diff_price * quantity * POINT_VALUE[
-        contract_code] if direction == "Buy" else -1 * diff_price * quantity * POINT_VALUE[contract_code]
+    gain_price = price - cost_price if direction == "Buy" else -1 * (price - cost_price)
+    revenue = gain_price * quantity * POINT_VALUE[contract_code]
     revenue_data_obj = {
         "year": date_pieces[0],
         "month": date_pieces[1],
@@ -58,7 +57,7 @@ def record_revenue(deal, contract_code, action):
         "direction": direction,
         "open_price": cost_price,
         "close_price": price,
-        "diff_price": diff_price,
+        "gain_price": gain_price,
         "revenue": revenue
     }
     serializer = RevenueSerializer(data=revenue_data_obj)

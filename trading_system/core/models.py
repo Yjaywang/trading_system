@@ -110,7 +110,7 @@ class Revenue(models.Model):
     direction = models.CharField(max_length=20)          # buy, sell, no action
     open_price = models.FloatField()
     close_price = models.FloatField()
-    diff_price = models.FloatField()
+    gain_price = models.FloatField()
     revenue = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True) # created time
     updated_at = models.DateTimeField(auto_now=True)     # updated time

@@ -19,7 +19,6 @@ def view_dtl(request):
 
 @api_view(['POST'])
 def test(request):
-    # open_orders()
     close_orders()
     return Response('')
 

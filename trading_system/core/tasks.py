@@ -9,7 +9,7 @@ from .services.line import push_message
 def op_scraper_task():
     try:
         run_op_scraper()
-        push_message('test op scraper')
+        push_message('op scraper done')
     except Exception as e:
         print(f"Error in op_scraper_task: {e}")
 
@@ -18,7 +18,7 @@ def op_scraper_task():
 def price_scraper_task():
     try:
         run_price_scraper()
-        push_message('test price scraper')
+        push_message('price scraper done')
     except Exception as e:
         print(f"Error in price_scraper_task: {e}")
 
