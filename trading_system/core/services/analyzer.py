@@ -1,8 +1,6 @@
-import pandas as pd
-import os
-from ..models import OptionData, PriceData, Signal, Settlement
-from ..serializers import OptionDataSerializer, PriceDataSerializer, SignalSerializer, SettlementSerializer
-from ..utils.trding_signal import trading_signal_v1, reverse_signal_v1, settlement_signal_v1
+from ..models import OptionData, Signal
+from ..serializers import OptionDataSerializer, SignalSerializer
+from ..utils.trding_signal import trading_signal_v2, reverse_signal_v1, settlement_signal_v1
 from datetime import datetime, timedelta, time as dt_time
 from .line import push_message
 from ..utils.constants import DATE_FORMAT
@@ -59,7 +57,7 @@ def run_analysis():
                         serializer.save()
                         print('Signal data successfully updated.')
 
-                signal = trading_signal_v1(call_count, call_amount, put_count, put_amount)
+                signal = trading_signal_v2(call_count, call_amount, put_count, put_amount)
                 signal_data_obj = {
                     'ref_date': data['date'],
                     'reverse_signal': 1 if reverse_signal else 0,
