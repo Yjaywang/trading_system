@@ -1,9 +1,11 @@
-from ..models import OptionData, Signal
-from ..serializers import OptionDataSerializer, SignalSerializer
+from ..models import OptionData, Signal, Revenue
+from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
 from ..utils.trding_signal import trading_signal_v2, reverse_signal_v1, settlement_signal_v1
-from datetime import datetime, timedelta, time as dt_time
+from datetime import datetime, timedelta, time as dt_time, date
 from .line import push_message
 from ..utils.constants import DATE_FORMAT
+from django.db.models import Sum
+from django.db.models.functions import ExtractWeek, ExtractYear, ExtractMonth
 
 
 def run_analysis():
@@ -101,7 +103,109 @@ def run_analysis():
         push_message(f'sync signal data error: {e}')
 
 
-def calculate_revenue():
+def get_current_weekday_dates():
+    now = datetime.now()
+    start_of_week = now - timedelta(days=now.weekday()) # get Monday
+    end_of_week = start_of_week + timedelta(days=4)     # get Friday
+    return start_of_week.strftime(DATE_FORMAT), end_of_week.strftime(DATE_FORMAT)
+
+
+def get_current_month_dates(year, month):
+    start_of_month = date(year, month, 1)
+    if month == 12:
+        end_of_month = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end_of_month = date(year, month + 1, 1) - timedelta(days=1)
+    start_of_month_str = start_of_month.strftime(DATE_FORMAT)
+    end_of_month_str = end_of_month.strftime(DATE_FORMAT)
+    return start_of_month_str, end_of_month_str
+
+
+def get_revenue(time_filter):
+    now = datetime.now()
+    current_year = now.year
+    current_month = now.month
+    current_week = now.isocalendar()[1]
+
+    if time_filter == 'week':
+        start_date, end_date = get_current_weekday_dates()
+    elif time_filter == 'month':
+        start_date, end_date = get_current_month_dates(current_year, current_month)
+    elif time_filter == 'year':
+        start_date = date(current_year, 1, 1)
+        end_date = date(current_year, 12, 31)
+    else:
+        raise ValueError("Invalid time filter. Choose from 'week', 'month', 'year'.")
+
+    if time_filter == 'week':
+        current_revenue = (
+            Revenue.objects.filter(created_at__year=current_year).annotate(week_num=ExtractWeek('created_at')).filter(
+                week_num=current_week).aggregate(total_revenue=Sum('revenue'), total_gain_price=Sum('gain_price')))
+    elif time_filter == 'month':
+        current_revenue = (
+            Revenue.objects.filter(created_at__year=current_year).annotate(month_num=ExtractMonth('created_at')).filter(
+                month_num=current_month).aggregate(total_revenue=Sum('revenue'), total_gain_price=Sum('gain_price')))
+    elif time_filter == 'year':
+        current_revenue = (
+            Revenue.objects.filter(created_at__year=current_year).aggregate(
+                total_revenue=Sum('revenue'), total_gain_price=Sum('gain_price')))
+
+    # Construct the data object
+    data_obj = {
+        'current_year': current_year,
+        'current_month': current_month,
+        'current_week': current_week,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_gain_price': current_revenue['total_gain_price'],
+        'total_revenue': current_revenue['total_revenue']
+    }
+    return data_obj
+
+
+def get_this_week_revenue():
+    return get_revenue('week')
+
+
+def get_this_month_revenue():
+    return get_revenue('month')
+
+
+def get_this_year_revenue():
+    return get_revenue('year')
+
+
+def send_this_week_results():
+    data = get_this_week_revenue()
+    message = (f"{data['current_year']} week {data['current_week']} result:\n\n"
+               f"From: {data['start_date']}\n"
+               f"To: {data['end_date']}\n"
+               f"1. Gain price: {data['total_gain_price']}\n"
+               f"2. Revenue: {data['total_revenue']}")
+    push_message(message)
+
+
+def send_this_month_results():
+    data = get_this_month_revenue()
+    message = (f"{data['current_year']}/{data['current_month']} result:\n\n"
+               f"From: {data['start_date']}\n"
+               f"To: {data['end_date']}\n"
+               f"1. Gain price: {data['total_gain_price']}\n"
+               f"2. Revenue: {data['total_revenue']}")
+    push_message(message)
+
+
+def send_this_year_results():
+    data = get_this_year_revenue()
+    message = (f"{data['current_year']} result:\n\n"
+               f"From: {data['start_date']}\n"
+               f"To: {data['end_date']}\n"
+               f"1. Gain price: {data['total_gain_price']}\n"
+               f"2. Revenue: {data['total_revenue']}")
+    push_message(message)
+
+
+def year_monthly_revenue():
     pass
 
 

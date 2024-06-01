@@ -1,6 +1,7 @@
 from celery import shared_task
+from datetime import datetime, timedelta
 from .services.scraper import run_op_scraper, run_price_scraper
-from .services.analyzer import run_analysis
+from .services.analyzer import run_analysis, send_this_week_results, send_this_month_results, send_this_year_results
 from .services.order import open_orders, close_orders
 from .services.line import push_message
 
@@ -45,6 +46,37 @@ def close_position_task():
         close_orders()
     except Exception as e:
         print(f"Error in close_position_task: {e}")
+
+
+@shared_task
+def check_and_notify_month_end():
+    today = datetime.today()
+    if (today + timedelta(days=1)).day == 1:
+        notify_this_month_revenue_task()
+
+
+@shared_task(max_retries=0)
+def notify_this_week_revenue_task():
+    try:
+        send_this_week_results()
+    except Exception as e:
+        print(f"Error in notify_this_week_revenue_task: {e}")
+
+
+@shared_task(max_retries=0)
+def notify_this_month_revenue_task():
+    try:
+        send_this_month_results()
+    except Exception as e:
+        print(f"Error in notify_this_month_revenue_task: {e}")
+
+
+@shared_task(max_retries=0)
+def notify_this_year_revenue_task():
+    try:
+        send_this_year_results()
+    except Exception as e:
+        print(f"Error in notify_this_year_revenue_task: {e}")
 
 
 @shared_task(max_retries=0)

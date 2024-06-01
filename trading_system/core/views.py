@@ -3,8 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price
-from .services.analyzer import run_analysis
+from .services.analyzer import run_analysis, get_this_week_revenue
 from .services.order import open_orders, close_orders
+from .services.line import push_message_test
 
 
 @api_view()
@@ -14,7 +15,8 @@ def view_dtl(request):
 
 @api_view(['POST'])
 def test(request):
-    return Response('')
+    data = get_this_week_revenue()
+    return Response(data)
 
 
 @api_view(['POST'])
