@@ -16,7 +16,7 @@ services:
     build: .
     image: trading_system_image
     working_dir: /trading_system/trading_system
-    command: /bin/bash -c "python manage.py runserver 0.0.0.0:8000 & celery -A trading_system worker --loglevel=info & celery -A trading_system beat --loglevel=info & celery -A trading_system flower --port=5555"
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     volumes:
       - .:/trading_system
     ports:
