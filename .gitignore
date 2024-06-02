@@ -3,6 +3,7 @@ trding_signal.py
 *.pfx
 settlement.json
 celerybeat-schedule.db
+*.pid
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
