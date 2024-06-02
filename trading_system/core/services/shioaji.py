@@ -36,7 +36,8 @@ class ShioajiAPI:
                     person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
                 )
             except Exception:
-                logging.error(f"Error initializing API")
+                logging.error(f"Error initializing api")
+                raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def close(self):
@@ -45,36 +46,48 @@ class ShioajiAPI:
                 self.api.logout()
                 self.api = None
             except Exception:
-                logging.error(f"Error closing API")
+                logging.error(f"Error closing api")
+                raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def usage(self):
         if self.api is not None:
-            return self.api.usage()
+            try:
+                return self.api.usage()
+            except Exception:
+                logging.error(f"Error fetching usage")
+                raise Exception
 
     @staticmethod
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_action_type(action_type):
         return getattr(sj.constant.Action, action_type, None) # type: ignore
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_order(self, action, quantity):
         if self.api is not None:
-            action = ShioajiAPI.get_action_type(action)
-            if action is not None:
-                return self.api.Order(
-                    action=action,
-                    price=0,
-                    quantity=quantity,
-                    price_type=sj.constant.FuturesPriceType.MKP, # type: ignore
-                    order_type=sj.constant.OrderType.IOC,        # type: ignore
-                    octype=sj.constant.FuturesOCType.Auto,       # type: ignore
-                    account=self.api.futopt_account)
+            try:
+                action = ShioajiAPI.get_action_type(action)
+                if action is not None:
+                    return self.api.Order(
+                        action=action,
+                        price=0,
+                        quantity=quantity,
+                        price_type=sj.constant.FuturesPriceType.MKP, # type: ignore
+                        order_type=sj.constant.OrderType.IOC,        # type: ignore
+                        octype=sj.constant.FuturesOCType.Auto,       # type: ignore
+                        account=self.api.futopt_account)
+            except Exception:
+                logging.error(f"Error getting order")
+                raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_contract_type(self, contract_type):
         if self.api is not None:
-            return getattr(self.api.Contracts.Futures, contract_type, None)
+            try:
+                return getattr(self.api.Contracts.Futures, contract_type, None)
+            except Exception:
+                logging.error(f"Error getting contract type")
+                raise Exception
 
     def get_latest_contract(self, contract_type):
         return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"]], key=lambda x: x.delivery_date)
@@ -85,17 +98,26 @@ class ShioajiAPI:
                 return self.api.place_order(contract, order, timeout=0)
             except Exception:
                 logging.error(f"Error making a deal")
+                raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_current_position(self):
         if self.api is not None and self.api.futopt_account:
-            return self.api.list_positions(account=self.api.futopt_account, timeout=20000)
+            try:
+                return self.api.list_positions(account=self.api.futopt_account, timeout=20000)
+            except Exception:
+                logging.error(f"Error getting positions")
+                raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def update_trade_status(self, trade):
         if self.api is not None:
-            self.api.update_status(trade=trade)
-            return dict(trade)
+            try:
+                self.api.update_status(trade=trade)
+                return dict(trade)
+            except Exception:
+                logging.error(f"Error updating trade status")
+                raise Exception
 
 
 def process_deal(trade, contract_code, action):
