@@ -171,7 +171,7 @@ def get_position():
     try:
         position_data_objs = []
         api_wrapper.initialize_api()
-        # time.sleep(5)
+        time.sleep(5)
         current_position = api_wrapper.get_current_position()
         if not current_position:
             return position_data_objs
