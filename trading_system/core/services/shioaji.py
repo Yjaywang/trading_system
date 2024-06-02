@@ -1,6 +1,7 @@
 import shioaji as sj
 import os
 import time
+import gc
 from dotenv import load_dotenv
 from .line import push_message
 from datetime import datetime
@@ -67,7 +68,10 @@ class ShioajiAPI:
 
     def get_current_position(self):
         if self.api is not None and self.api.futopt_account:
-            return self.api.list_positions(self.api.futopt_account)
+            try:
+                return self.api.list_positions(self.api.futopt_account)
+            except Exception:
+                return self.api.list_positions(self.api.futopt_account)
 
     def update_trade_status(self, trade):
         if self.api is not None:
@@ -171,7 +175,6 @@ def get_position():
     try:
         position_data_objs = []
         api_wrapper.initialize_api()
-        time.sleep(5)
         current_position = api_wrapper.get_current_position()
         if not current_position:
             return position_data_objs
@@ -186,3 +189,4 @@ def get_position():
         return None
     finally:
         api_wrapper.close()
+        gc.collect()
