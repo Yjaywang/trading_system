@@ -6,7 +6,7 @@ from .services.scraper import run_op_scraper, run_price_scraper, insert_settleme
 from .services.analyzer import run_analysis, get_revenue
 from .services.order import open_orders, close_orders
 from .services.line import push_message_test
-from .services.shioaji import get_position
+from .services.shioaji import get_position, get_api_usage
 
 
 @api_view()
@@ -17,6 +17,12 @@ def view_dtl(request):
 @api_view(['POST'])
 def test(request):
     return Response('')
+
+
+@api_view(['POST'])
+def usage(request):
+    data = get_api_usage()
+    return Response(data)
 
 
 @api_view(['POST'])

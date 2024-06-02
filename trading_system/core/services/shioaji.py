@@ -4,6 +4,8 @@ import time
 from dotenv import load_dotenv
 from .line import push_message
 from datetime import datetime
+from tenacity import retry, stop_after_attempt, wait_fixed
+import logging
 
 load_dotenv()
 
@@ -20,27 +22,42 @@ class ShioajiAPI:
     def __init__(self):
         self.api = sj.Shioaji(simulation=(os.getenv('APP_ENV') != 'production'))
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def initialize_api(self):
         if self.api is not None:
-            self.api.login(
-                api_key=os.getenv('SHIOAJI_API_KEY', ''),
-                secret_key=os.getenv('SHIOAJI_SECRET_KEY', ''),
-                receive_window=60000)
-            self.api.activate_ca(
-                ca_path=ca_file_path,
-                ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
-                person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
-            )
+            try:
+                self.api.login(
+                    api_key=os.getenv('SHIOAJI_API_KEY', ''),
+                    secret_key=os.getenv('SHIOAJI_SECRET_KEY', ''),
+                    receive_window=60000)
+                self.api.activate_ca(
+                    ca_path=ca_file_path,
+                    ca_passwd=os.getenv('SHIOAJI_CA_PASSWORD', ''),
+                    person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
+                )
+            except Exception:
+                logging.error(f"Error initializing API")
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def close(self):
         if self.api is not None:
-            self.api.logout()
-            self.api = None
+            try:
+                self.api.logout()
+                self.api = None
+            except Exception:
+                logging.error(f"Error closing API")
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    def usage(self):
+        if self.api is not None:
+            return self.api.usage()
 
     @staticmethod
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_action_type(action_type):
         return getattr(sj.constant.Action, action_type, None) # type: ignore
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_order(self, action, quantity):
         if self.api is not None:
             action = ShioajiAPI.get_action_type(action)
@@ -54,6 +71,7 @@ class ShioajiAPI:
                     octype=sj.constant.FuturesOCType.Auto,       # type: ignore
                     account=self.api.futopt_account)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_contract_type(self, contract_type):
         if self.api is not None:
             return getattr(self.api.Contracts.Futures, contract_type, None)
@@ -63,15 +81,17 @@ class ShioajiAPI:
 
     def make_a_deal(self, contract, order):
         if self.api is not None:
-            return self.api.place_order(contract, order, timeout=0)
+            try:
+                return self.api.place_order(contract, order, timeout=0)
+            except Exception:
+                logging.error(f"Error making a deal")
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def get_current_position(self):
         if self.api is not None and self.api.futopt_account:
-            try:
-                return self.api.list_positions(self.api.futopt_account)
-            except Exception:
-                return self.api.list_positions(self.api.futopt_account)
+            return self.api.list_positions(account=self.api.futopt_account, timeout=20000)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def update_trade_status(self, trade):
         if self.api is not None:
             self.api.update_status(trade=trade)
@@ -108,13 +128,13 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         contract = api_wrapper.get_latest_contract(contract_type)
         order = api_wrapper.get_order(action, quantity)
         trade = api_wrapper.make_a_deal(contract, order)
-        time.sleep(20)
+        time.sleep(25)
         if trade is not None:
             updated_trade = api_wrapper.update_trade_status(trade)
             return process_deal(updated_trade, contract_code, action)
         return None
-    except Exception as e:
-        message = f"Open position error: {e}"
+    except Exception:
+        message = f"Open position error"
         print(message)
         push_message(message)
         return None
@@ -152,15 +172,15 @@ def close_position(contract_code):
         order = api_wrapper.get_order(action, quantity)
         trade = api_wrapper.make_a_deal(contract, order)
         if trade:
-            time.sleep(20)
+            time.sleep(25)
             updated_trade = api_wrapper.update_trade_status(trade)
             deal_result = process_deal(updated_trade, contract_code, action)
             if deal_result is not None:
                 deal_result['cost_price'] = cost_price
                 return deal_result
         return None
-    except Exception as e:
-        message = f"Close position error: {e}"
+    except Exception:
+        message = f"Close position error"
         print(message)
         push_message(message)
         return None
@@ -181,9 +201,21 @@ def get_position():
             position_data_objs.append(data)
         return position_data_objs
     except Exception as e:
-        message = f"Get position error: {e}"
+        message = f"Get position error"
         print(message)
         push_message(message)
+        return None
+    finally:
+        api_wrapper.close()
+
+
+def get_api_usage():
+    api_wrapper = ShioajiAPI()
+    try:
+        api_wrapper.initialize_api()
+        data = api_wrapper.usage()
+        return data
+    except Exception:
         return None
     finally:
         api_wrapper.close()
