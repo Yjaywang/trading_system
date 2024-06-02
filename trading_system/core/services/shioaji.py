@@ -1,7 +1,6 @@
 import shioaji as sj
 import os
 import time
-import gc
 from dotenv import load_dotenv
 from .line import push_message
 from datetime import datetime
@@ -131,7 +130,6 @@ def close_position(contract_code):
         cost_price = 0
         api_wrapper.initialize_api()
         contract_type = api_wrapper.get_contract_type(contract_code)
-        time.sleep(5)
         current_position = api_wrapper.get_current_position()
         if not current_position:
             message = "No position in account"
@@ -189,4 +187,3 @@ def get_position():
         return None
     finally:
         api_wrapper.close()
-        gc.collect()
