@@ -205,9 +205,5 @@ def send_this_year_results():
     push_message(message)
 
 
-def year_monthly_revenue():
-    pass
-
-
 def back_test():
     pass
