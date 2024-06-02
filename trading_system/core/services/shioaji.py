@@ -92,6 +92,7 @@ class ShioajiAPI:
     def get_latest_contract(self, contract_type):
         return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"]], key=lambda x: x.delivery_date)
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def make_a_deal(self, contract, order):
         if self.api is not None:
             try:
