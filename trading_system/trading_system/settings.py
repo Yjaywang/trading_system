@@ -169,6 +169,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.notify_this_year_revenue_task',
         'schedule': crontab(minute='20', hour='17', day_of_month='31', month_of_year='12'), # Year end 17:20
     },
+    'gc-taks-task': {
+        'task': 'core.tasks.clear_memory',
+        'schedule': crontab(minute='30', hour='*'),                                         # every hour:30
+    },
                                                                                               # 'cron-task': {
                                                                                               #     'task': 'core.tasks.cron_test',
                                                                                               #     'schedule': crontab(minute='*', hour='*', day_of_week='1-5'),   # Mon to Fri 13:44

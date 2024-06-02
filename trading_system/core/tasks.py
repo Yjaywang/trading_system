@@ -4,6 +4,14 @@ from .services.scraper import run_op_scraper, run_price_scraper
 from .services.analyzer import run_analysis, send_this_week_results, send_this_month_results, send_this_year_results
 from .services.order import open_orders, close_orders
 from .services.line import push_message
+import gc
+
+
+@shared_task(max_retries=0)
+def clear_memory():
+    print("gc cron start")
+    gc.collect()
+    print("gc cron done")
 
 
 @shared_task(max_retries=0)
