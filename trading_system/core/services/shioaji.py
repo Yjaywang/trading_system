@@ -164,3 +164,25 @@ def close_position(contract_code):
         return None
     finally:
         api_wrapper.close()
+
+
+def get_position():
+    api_wrapper = ShioajiAPI()
+    try:
+        position_data_objs = []
+        api_wrapper.initialize_api()
+        # time.sleep(5)
+        current_position = api_wrapper.get_current_position()
+        if not current_position:
+            return position_data_objs
+        for position in current_position:
+            data = dict(position)
+            position_data_objs.append(data)
+        return position_data_objs
+    except Exception as e:
+        message = f"Get position error: {e}"
+        print(message)
+        push_message(message)
+        return None
+    finally:
+        api_wrapper.close()

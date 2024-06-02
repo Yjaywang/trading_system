@@ -6,6 +6,7 @@ from .services.scraper import run_op_scraper, run_price_scraper, insert_settleme
 from .services.analyzer import run_analysis, get_revenue
 from .services.order import open_orders, close_orders
 from .services.line import push_message_test
+from .services.shioaji import get_position
 
 
 @api_view()
@@ -15,15 +16,19 @@ def view_dtl(request):
 
 @api_view(['POST'])
 def test(request):
-
     return Response('')
+
+
+@api_view(['POST'])
+def position(request):
+    data = get_position()
+    return Response(data)
 
 
 @api_view(['GET'])
 def revenue(request, timeframe=None):
     if not timeframe:
         return Response({"error": "Timeframe is required"}, status=status.HTTP_400_BAD_REQUEST)
-
     if timeframe not in ['week', 'month', 'year']:
         return Response({"error": "Invalid timeframe"}, status=status.HTTP_400_BAD_REQUEST)
     data = get_revenue(timeframe)
