@@ -114,7 +114,18 @@ class ShioajiAPI:
     def update_trade_status(self, trade):
         if self.api is not None:
             try:
-                self.api.update_status(trade=trade)
+                max_retries = 10
+                retry_count = 0
+                while True:
+                    self.api.update_status(trade=trade)
+                    updated_trade = dict(trade)
+                    if updated_trade['status']['status'] == 'Filled':
+                        break
+                    retry_count += 1
+                    if retry_count >= max_retries:
+                        print("Max retries reached, exiting loop.")
+                        break
+                    time.sleep(5)
                 return dict(trade)
             except Exception:
                 logging.error(f"Error updating trade status")
@@ -151,7 +162,6 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         contract = api_wrapper.get_latest_contract(contract_type)
         order = api_wrapper.get_order(action, quantity)
         trade = api_wrapper.make_a_deal(contract, order)
-        time.sleep(25)
         if trade is not None:
             updated_trade = api_wrapper.update_trade_status(trade)
             return process_deal(updated_trade, contract_code, action)
@@ -195,7 +205,6 @@ def close_position(contract_code):
         order = api_wrapper.get_order(action, quantity)
         trade = api_wrapper.make_a_deal(contract, order)
         if trade:
-            time.sleep(25)
             updated_trade = api_wrapper.update_trade_status(trade)
             deal_result = process_deal(updated_trade, contract_code, action)
             if deal_result is not None:
