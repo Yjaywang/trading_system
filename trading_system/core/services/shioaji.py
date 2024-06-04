@@ -160,6 +160,15 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         api_wrapper.initialize_api()
         contract_type = api_wrapper.get_contract_type(contract_code)
         contract = api_wrapper.get_latest_contract(contract_type)
+        current_position = api_wrapper.get_current_position()
+        if current_position:
+            for position in current_position:
+                data = dict(position)
+                if contract_code in data['code']:
+                    message = f"position already exists."
+                    print(message)
+                    push_message(message)
+                    return None
         order = api_wrapper.get_order(action, quantity)
         trade = api_wrapper.make_a_deal(contract, order)
         if trade is not None:
