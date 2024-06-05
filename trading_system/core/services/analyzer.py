@@ -84,18 +84,23 @@ def run_analysis():
                     latest_op = OptionData.objects.latest('created_at')
                     latest_op_data_serializer = OptionDataSerializer(latest_op)
                     latest_op_data = dict(latest_op_data_serializer.data)
-                    message = (
-                        f"A good analsis done for you\n\n"
-                        f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                        f"2. ref_date:{signal_data_obj['ref_date']}\n"
-                        f"3. trading_signal:{signal_data_obj['trading_signal']}\n"
-                        f"4. reverse_signal:{signal_data_obj['reverse_signal']}\n"
-                        f"tw_call_count/amount: {latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}\n"
-                        f"tw_put_count/amount: {latest_op_data['tw_trade_put_count']} / {latest_op_data['tw_trade_put_amount']}\n"
-                        f"fr_call_count/amount: {latest_op_data['fr_trade_call_count']} / {latest_op_data['fr_trade_call_amount']}\n"
-                        f"fr_put_count/amount: {latest_op_data['fr_trade_put_count']} / {latest_op_data['fr_trade_put_amount']}\n"
-                        f"call_count/amount: {latest_op_data['call_count']} / {latest_op_data['call_amount']}\n"
-                        f"put_count/amount: {latest_op_data['put_count']} / {latest_op_data['put_amount']}\n")
+                    message = (f"A good analsis done for you\n\n"
+                               f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                               f"2. ref_date:{signal_data_obj['ref_date']}\n"
+                               f"3. trading_signal:{signal_data_obj['trading_signal']}\n"
+                               f"4. reverse_signal:{signal_data_obj['reverse_signal']}\n"
+                               f"tw_call_count/amount:\n"
+                               f"{latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}\n"
+                               f"tw_put_count/amount:\n"
+                               f"{latest_op_data['tw_trade_put_count']} / {latest_op_data['tw_trade_put_amount']}\n"
+                               f"fr_call_count/amount:\n"
+                               f"{latest_op_data['fr_trade_call_count']} / {latest_op_data['fr_trade_call_amount']}\n"
+                               f"fr_put_count/amount:\n"
+                               f"{latest_op_data['fr_trade_put_count']} / {latest_op_data['fr_trade_put_amount']}\n"
+                               f"call_count/amount:\n"
+                               f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}\n"
+                               f"put_count/amount:\n"
+                               f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}")
                     push_message(message)
             current_date += timedelta(days=1)
     except Exception as e:
