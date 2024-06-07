@@ -155,7 +155,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'close-order-task': {
         'task': 'core.tasks.close_position_task',
-        'schedule': crontab(minute='43', hour='13', day_of_week='1-5'),                     # Mon to Fri 13:43
+        'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),                     # Mon to Fri 13:44
     },
     'weekly-notify-revenue-task': {
         'task': 'core.tasks.notify_this_week_revenue_task',

@@ -5,6 +5,7 @@ settlement.json
 celerybeat-schedule.db
 *.pid
 nginx.conf
+nginx_production.conf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
