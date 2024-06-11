@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price
-from .services.analyzer import run_analysis, get_revenue
+from .services.analyzer import run_analysis, get_revenue, get_risk_condition
 from .services.order import open_orders, close_orders
 from .services.line import push_message_test
-from .services.shioaji import get_position, get_api_usage
+from .services.shioaji import get_position, get_api_usage, get_account_margin
 
 
 @api_view()
@@ -16,6 +16,7 @@ def view_dtl(request):
 
 @api_view(['POST'])
 def test(request):
+    get_risk_condition()
     return Response('')
 
 

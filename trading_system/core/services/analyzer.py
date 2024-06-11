@@ -6,6 +6,7 @@ from .line import push_message
 from ..utils.constants import DATE_FORMAT
 from django.db.models import Sum
 from django.db.models.functions import ExtractWeek, ExtractYear, ExtractMonth
+from .shioaji import get_account_margin
 
 
 def run_analysis():
@@ -208,6 +209,27 @@ def send_this_year_results():
                f"1. Gain price: {data['total_gain_price']}\n"
                f"2. Revenue: {data['total_revenue']}")
     push_message(message)
+
+
+def get_risk_condition():
+    data = get_account_margin()
+    if data is not None:
+        margin_dict = dict(data)
+        initial_margin = margin_dict['initial_margin']
+        equity_amount = margin_dict['equity_amount']
+        available_margin = margin_dict['available_margin']
+        print(initial_margin != 0)
+        if initial_margin != 0:
+            if available_margin <= 0:
+                message = (f"!!!Warning!!!\n\n"
+                           f"available_margin: {available_margin}\n"
+                           f"less than 0")
+                push_message(message)
+            if equity_amount / initial_margin < 1.7:
+                message = (f"!!!Warning!!!\n\n"
+                           f"margin ratio: {round(equity_amount / initial_margin,2)}\n"
+                           f"less than 1.7")
+                push_message(message)
 
 
 def back_test():

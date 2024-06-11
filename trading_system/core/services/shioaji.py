@@ -111,6 +111,15 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    def get_current_margin(self):
+        if self.api is not None and self.api.futopt_account:
+            try:
+                return self.api.margin(account=self.api.futopt_account, timeout=20000)
+            except Exception:
+                logging.error(f"Error getting margin")
+                raise Exception
+
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def update_trade_status(self, trade):
         if self.api is not None:
             try:
@@ -255,6 +264,18 @@ def get_api_usage():
     try:
         api_wrapper.initialize_api()
         data = api_wrapper.usage()
+        return data
+    except Exception:
+        return None
+    finally:
+        api_wrapper.close()
+
+
+def get_account_margin():
+    api_wrapper = ShioajiAPI()
+    try:
+        api_wrapper.initialize_api()
+        data = api_wrapper.get_current_margin()
         return data
     except Exception:
         return None

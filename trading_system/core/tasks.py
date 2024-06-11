@@ -1,7 +1,7 @@
 from celery import shared_task
 from datetime import datetime, timedelta
 from .services.scraper import run_op_scraper, run_price_scraper
-from .services.analyzer import run_analysis, send_this_week_results, send_this_month_results, send_this_year_results
+from .services.analyzer import run_analysis, send_this_week_results, send_this_month_results, send_this_year_results,get_risk_condition
 from .services.order import open_orders, close_orders
 from .services.line import push_message
 import gc
@@ -85,6 +85,14 @@ def notify_this_year_revenue_task():
         send_this_year_results()
     except Exception as e:
         print(f"Error in notify_this_year_revenue_task: {e}")
+
+
+@shared_task(max_retries=0)
+def check_risk():
+    try:
+        get_risk_condition()
+    except Exception as e:
+        print(f"Error in check_risk_task: {e}")
 
 
 @shared_task(max_retries=0)
