@@ -23,7 +23,7 @@ class ShioajiAPI:
         self.api = sj.Shioaji(simulation=(os.getenv('APP_ENV') != 'production'))
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def initialize_api(self):
+    def _initialize_api(self):
         if self.api is not None:
             try:
                 self.api.login(
@@ -40,7 +40,7 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def close(self):
+    def _close(self):
         if self.api is not None:
             try:
                 self.api.logout()
@@ -50,7 +50,7 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def usage(self):
+    def _usage(self):
         if self.api is not None:
             try:
                 return self.api.usage()
@@ -59,14 +59,14 @@ class ShioajiAPI:
                 raise Exception
 
     @staticmethod
-    def get_action_type(action_type):
+    def _get_action_type(action_type):
         return getattr(sj.constant.Action, action_type, None) # type: ignore
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def get_order(self, action, quantity):
+    def _get_order(self, action, quantity):
         if self.api is not None:
             try:
-                action = ShioajiAPI.get_action_type(action)
+                action = ShioajiAPI._get_action_type(action)
                 if action is not None:
                     return self.api.Order(
                         action=action,
@@ -81,7 +81,7 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def get_contract_type(self, contract_type):
+    def _get_contract_type(self, contract_type):
         if self.api is not None:
             try:
                 return getattr(self.api.Contracts.Futures, contract_type, None)
@@ -89,11 +89,11 @@ class ShioajiAPI:
                 logging.error(f"Error getting contract type")
                 raise Exception
 
-    def get_latest_contract(self, contract_type):
+    def _get_latest_contract(self, contract_type):
         return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"]], key=lambda x: x.delivery_date)
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def make_a_deal(self, contract, order):
+    def _make_a_deal(self, contract, order):
         if self.api is not None:
             try:
                 return self.api.place_order(contract, order, timeout=0)
@@ -102,7 +102,7 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def get_current_position(self):
+    def _get_current_position(self):
         if self.api is not None and self.api.futopt_account:
             try:
                 return self.api.list_positions(account=self.api.futopt_account, timeout=20000)
@@ -111,7 +111,7 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def get_current_margin(self):
+    def _get_current_margin(self):
         if self.api is not None and self.api.futopt_account:
             try:
                 return self.api.margin(account=self.api.futopt_account, timeout=20000)
@@ -120,7 +120,7 @@ class ShioajiAPI:
                 raise Exception
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
-    def update_trade_status(self, trade):
+    def _update_trade_status(self, trade):
         if self.api is not None:
             try:
                 max_retries = 10
@@ -141,7 +141,7 @@ class ShioajiAPI:
                 raise Exception
 
 
-def process_deal(trade, contract_code, action):
+def _process_deal(trade, contract_code, action):
     status = trade['status']['status']
     deals = trade['status']['deals']
     if status == 'Filled':
@@ -166,10 +166,10 @@ def process_deal(trade, contract_code, action):
 def open_position(contract_code, action, quantity): # Buy, Sell
     api_wrapper = ShioajiAPI()
     try:
-        api_wrapper.initialize_api()
-        contract_type = api_wrapper.get_contract_type(contract_code)
-        contract = api_wrapper.get_latest_contract(contract_type)
-        current_position = api_wrapper.get_current_position()
+        api_wrapper._initialize_api()
+        contract_type = api_wrapper._get_contract_type(contract_code)
+        contract = api_wrapper._get_latest_contract(contract_type)
+        current_position = api_wrapper._get_current_position()
         if current_position:
             for position in current_position:
                 data = dict(position)
@@ -178,11 +178,11 @@ def open_position(contract_code, action, quantity): # Buy, Sell
                     print(message)
                     push_message(message)
                     return None
-        order = api_wrapper.get_order(action, quantity)
-        trade = api_wrapper.make_a_deal(contract, order)
+        order = api_wrapper._get_order(action, quantity)
+        trade = api_wrapper._make_a_deal(contract, order)
         if trade is not None:
-            updated_trade = api_wrapper.update_trade_status(trade)
-            return process_deal(updated_trade, contract_code, action)
+            updated_trade = api_wrapper._update_trade_status(trade)
+            return _process_deal(updated_trade, contract_code, action)
         return None
     except Exception:
         message = f"Open position error"
@@ -190,7 +190,7 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         push_message(message)
         return None
     finally:
-        api_wrapper.close()
+        api_wrapper._close()
 
 
 def close_position(contract_code):
@@ -199,9 +199,9 @@ def close_position(contract_code):
         action = ""
         quantity = 0
         cost_price = 0
-        api_wrapper.initialize_api()
-        contract_type = api_wrapper.get_contract_type(contract_code)
-        current_position = api_wrapper.get_current_position()
+        api_wrapper._initialize_api()
+        contract_type = api_wrapper._get_contract_type(contract_code)
+        current_position = api_wrapper._get_current_position()
         if not current_position:
             message = "No position in account"
             print(message)
@@ -219,12 +219,12 @@ def close_position(contract_code):
             print(message)
             push_message(message)
             return None
-        contract = api_wrapper.get_latest_contract(contract_type)
-        order = api_wrapper.get_order(action, quantity)
-        trade = api_wrapper.make_a_deal(contract, order)
+        contract = api_wrapper._get_latest_contract(contract_type)
+        order = api_wrapper._get_order(action, quantity)
+        trade = api_wrapper._make_a_deal(contract, order)
         if trade:
-            updated_trade = api_wrapper.update_trade_status(trade)
-            deal_result = process_deal(updated_trade, contract_code, action)
+            updated_trade = api_wrapper._update_trade_status(trade)
+            deal_result = _process_deal(updated_trade, contract_code, action)
             if deal_result is not None:
                 deal_result['cost_price'] = cost_price
                 return deal_result
@@ -235,15 +235,15 @@ def close_position(contract_code):
         push_message(message)
         return None
     finally:
-        api_wrapper.close()
+        api_wrapper._close()
 
 
 def get_position():
     api_wrapper = ShioajiAPI()
     try:
         position_data_objs = []
-        api_wrapper.initialize_api()
-        current_position = api_wrapper.get_current_position()
+        api_wrapper._initialize_api()
+        current_position = api_wrapper._get_current_position()
         if not current_position:
             return position_data_objs
         for position in current_position:
@@ -256,28 +256,28 @@ def get_position():
         push_message(message)
         return None
     finally:
-        api_wrapper.close()
+        api_wrapper._close()
 
 
 def get_api_usage():
     api_wrapper = ShioajiAPI()
     try:
-        api_wrapper.initialize_api()
-        data = api_wrapper.usage()
+        api_wrapper._initialize_api()
+        data = api_wrapper._usage()
         return data
     except Exception:
         return None
     finally:
-        api_wrapper.close()
+        api_wrapper._close()
 
 
 def get_account_margin():
     api_wrapper = ShioajiAPI()
     try:
-        api_wrapper.initialize_api()
-        data = api_wrapper.get_current_margin()
+        api_wrapper._initialize_api()
+        data = api_wrapper._get_current_margin()
         return data
     except Exception:
         return None
     finally:
-        api_wrapper.close()
+        api_wrapper._close()

@@ -106,12 +106,9 @@ def run_op_scraper():
 
 
 def run_price_scraper():
-    is_db_no_data = True
-    is_night_first = False
     try:
         # get last option record
         latest_price_data = PriceData.objects.latest('created_at')
-        is_db_no_data = False
         serializer = PriceDataSerializer(latest_price_data)
         data = dict(serializer.data)
         latest_date_str = data.get('date', datetime.today().strftime(DATE_FORMAT))
@@ -120,7 +117,6 @@ def run_price_scraper():
         # normally need to end in day period
         if data.get('period', 'day') == 'night':
             start_date = latest_date
-            is_night_first = True
         else:
             start_date = latest_date + timedelta(days=1)
     except PriceData.DoesNotExist:

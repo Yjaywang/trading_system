@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_today_date_info():
+def _get_today_date_info():
     today_date = datetime.today()
     today_date_str = today_date.strftime(DATE_FORMAT)
     date_pieces = today_date_str.split("/")
@@ -18,8 +18,8 @@ def get_today_date_info():
     return today_date_str, date_pieces, today_day
 
 
-def record_deal(deal, contract_code, action):
-    today_date_str, date_pieces, today_day = get_today_date_info()
+def _record_deal(deal, contract_code, action):
+    today_date_str, date_pieces, today_day = _get_today_date_info()
     order_data_obj = {
         "year": date_pieces[0],
         "month": date_pieces[1],
@@ -39,8 +39,8 @@ def record_deal(deal, contract_code, action):
         push_message(message)
 
 
-def record_revenue(deal, contract_code, action):
-    today_date_str, date_pieces, today_day = get_today_date_info()
+def _record_revenue(deal, contract_code, action):
+    today_date_str, date_pieces, today_day = _get_today_date_info()
     cost_price = deal["cost_price"]
     price = deal["price"]
     quantity = deal["quantity"]
@@ -84,7 +84,7 @@ def open_orders():
             if trading_signal is not None and quantity != 0:
                 deal_result = open_position(contract_code, action, quantity)
                 if deal_result is not None:
-                    record_deal(deal_result, contract_code, action)
+                    _record_deal(deal_result, contract_code, action)
                 else:
                     message = 'Deal is in trouble, please check your account'
                     print(message)
@@ -109,8 +109,8 @@ def close_orders():
         deal_result = close_position(contract_code)
         if deal_result is not None:
             action = deal_result['action']
-            record_deal(deal_result, contract_code, action)
-            revenue_data = record_revenue(deal_result, contract_code, action)
+            _record_deal(deal_result, contract_code, action)
+            revenue_data = _record_revenue(deal_result, contract_code, action)
             if revenue_data is not None:
                 formatted_string = (f"Today's revenue:\n\n"
                                     f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"

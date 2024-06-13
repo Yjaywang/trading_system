@@ -109,14 +109,14 @@ def run_analysis():
         push_message(f'sync signal data error: {e}')
 
 
-def get_current_weekday_dates():
+def _get_current_weekday_dates():
     now = datetime.now()
     start_of_week = now - timedelta(days=now.weekday()) # get Monday
     end_of_week = start_of_week + timedelta(days=4)     # get Friday
     return start_of_week.strftime(DATE_FORMAT), end_of_week.strftime(DATE_FORMAT)
 
 
-def get_current_month_dates(year, month):
+def _get_current_month_dates(year, month):
     start_of_month = date(year, month, 1)
     if month == 12:
         end_of_month = date(year + 1, 1, 1) - timedelta(days=1)
@@ -134,9 +134,9 @@ def get_revenue(time_filter):
     current_week = now.isocalendar()[1]
 
     if time_filter == 'week':
-        start_date, end_date = get_current_weekday_dates()
+        start_date, end_date = _get_current_weekday_dates()
     elif time_filter == 'month':
-        start_date, end_date = get_current_month_dates(current_year, current_month)
+        start_date, end_date = _get_current_month_dates(current_year, current_month)
     elif time_filter == 'year':
         start_date = date(current_year, 1, 1)
         end_date = date(current_year, 12, 31)
@@ -169,20 +169,20 @@ def get_revenue(time_filter):
     return data_obj
 
 
-def get_this_week_revenue():
+def _get_this_week_revenue():
     return get_revenue('week')
 
 
-def get_this_month_revenue():
+def _get_this_month_revenue():
     return get_revenue('month')
 
 
-def get_this_year_revenue():
+def _get_this_year_revenue():
     return get_revenue('year')
 
 
 def send_this_week_results():
-    data = get_this_week_revenue()
+    data = _get_this_week_revenue()
     message = (f"{data['current_year']} week {data['current_week']} result:\n\n"
                f"From: {data['start_date']}\n"
                f"To: {data['end_date']}\n"
@@ -192,7 +192,7 @@ def send_this_week_results():
 
 
 def send_this_month_results():
-    data = get_this_month_revenue()
+    data = _get_this_month_revenue()
     message = (f"{data['current_year']}/{data['current_month']} result:\n\n"
                f"From: {data['start_date']}\n"
                f"To: {data['end_date']}\n"
@@ -202,7 +202,7 @@ def send_this_month_results():
 
 
 def send_this_year_results():
-    data = get_this_year_revenue()
+    data = _get_this_year_revenue()
     message = (f"{data['current_year']} result:\n\n"
                f"From: {data['start_date']}\n"
                f"To: {data['end_date']}\n"
