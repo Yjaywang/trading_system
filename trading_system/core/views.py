@@ -1,3 +1,4 @@
+from .utils.decorators import require_secret_token
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -10,29 +11,34 @@ from .services.shioaji import get_position, get_api_usage, get_account_margin
 
 
 @api_view()
+@require_secret_token
 def view_dtl(request):
     return Response({'success': 200, 'message': 'api'})
 
 
 @api_view(['POST'])
+@require_secret_token
 def test(request):
     get_risk_condition()
     return Response('')
 
 
 @api_view(['POST'])
+@require_secret_token
 def usage(request):
     data = get_api_usage()
     return Response(data)
 
 
 @api_view(['POST'])
+@require_secret_token
 def position(request):
     data = get_position()
     return Response(data)
 
 
 @api_view(['GET'])
+@require_secret_token
 def revenue(request, timeframe=None):
     if not timeframe:
         return Response({"error": "Timeframe is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -43,6 +49,7 @@ def revenue(request, timeframe=None):
 
 
 @api_view(['POST'])
+@require_secret_token
 def init_op_price(request):
     insert_init_op()
     insert_init_price()
@@ -50,6 +57,7 @@ def init_op_price(request):
 
 
 @api_view(['POST', 'DELETE'])
+@require_secret_token
 def order(request):
     if request.method == 'POST':
         open_orders()
@@ -62,6 +70,7 @@ def order(request):
 
 
 @api_view(['POST'])
+@require_secret_token
 def analysis(request):
     run_analysis()
     print('ok')
@@ -69,6 +78,7 @@ def analysis(request):
 
 
 @api_view(['POST'])
+@require_secret_token
 def op_scraper(request):
     run_op_scraper()
     print('ok')
@@ -76,6 +86,7 @@ def op_scraper(request):
 
 
 @api_view(['POST'])
+@require_secret_token
 def price_scraper(request):
     run_price_scraper()
     print('ok')
@@ -83,6 +94,7 @@ def price_scraper(request):
 
 
 @api_view(['POST'])
+@require_secret_token
 def settlement(request):
     if request.method == 'POST':
         insert_settlement_date()
