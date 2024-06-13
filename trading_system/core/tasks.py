@@ -88,7 +88,7 @@ def notify_this_year_revenue_task():
 
 
 @shared_task(max_retries=0)
-def check_risk():
+def check_risk_task():
     try:
         get_risk_condition()
     except Exception as e:
