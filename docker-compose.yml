@@ -17,6 +17,8 @@ services:
         max-file: "3"
     volumes:
       - ./logs/redis_logs:/var/log/redis
+    networks:
+      - app-network
     restart: always
 
   app:
@@ -42,6 +44,8 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    networks:
+      - app-network
     restart: always
 
   nginx:
@@ -63,4 +67,9 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
+    networks:
+      - app-network
     restart: always
+
+networks:
+  app-network:
