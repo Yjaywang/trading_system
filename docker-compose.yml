@@ -10,6 +10,13 @@ services:
         limits:
           cpus: '0.2'
           memory: '256M'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - ./logs/redis_logs:/var/log/redis
     restart: always
 
   app:
@@ -19,7 +26,7 @@ services:
     command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     volumes:
       - .:/trading_system
-      - ./logs:/logs
+      - ./logs/app:/logs/app
     ports:
       - "8000:8000"
       - "5555:5555"
@@ -30,6 +37,11 @@ services:
         limits:
           cpus: '1.5'
           memory: '1.5G'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
     restart: always
 
   nginx:
@@ -46,4 +58,9 @@ services:
         limits:
           cpus: '0.2'
           memory: '128M'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
     restart: always

@@ -212,7 +212,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': '/logs/core_info.log',
+            'filename': '/logs/app/core_info.log',
             'formatter': 'verbose',
         },
         'mail_admins': {
