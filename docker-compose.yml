@@ -17,6 +17,8 @@ services:
         max-file: "3"
     volumes:
       - ./logs/redis_logs:/var/log/redis
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - app-network
     restart: always
@@ -29,6 +31,8 @@ services:
     volumes:
       - .:/trading_system
       - ./logs/app:/logs/app
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "8000:8000"
       - "5555:5555"
@@ -53,6 +57,8 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./logs/nginx_logs:/var/log/nginx
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     ports:
       - "80:80"
     depends_on:

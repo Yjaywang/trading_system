@@ -23,6 +23,9 @@ find . -path "*/migrations/*.pyc"  -delete
 
 
 
+docker-compose exec nginx nginx -t
+docker-compose exec nginx nginx -s reload
+
 .env
 ip
 trading_signal.py
