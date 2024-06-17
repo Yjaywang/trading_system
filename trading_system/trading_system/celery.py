@@ -16,3 +16,8 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 # @app.task(bind=True, ignore_result=True)
 # def debug_task(self):
 #     print(f'Request: {self.request!r}')
+app.conf.update(
+    worker_log_format='%(asctime)s %(levelname)s %(module)s %(message)s',
+    worker_task_log_format='%(asctime)s %(levelname)s %(module)s %(message)s',
+    worker_log_level='INFO',
+)
