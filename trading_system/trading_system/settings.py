@@ -178,11 +178,6 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.check_risk_task',
         'schedule': crontab(minute='45', hour='*'),                                         # every hour:45
     },
-
-                                                                                              # 'cron-task': {
-                                                                                              #     'task': 'core.tasks.cron_test',
-                                                                                              #     'schedule': crontab(minute='*', hour='*', day_of_week='1-5'),   # Mon to Fri 13:44
-                                                                                              # },
 }
 
 LOGGING = {
@@ -220,6 +215,12 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
         },
+        'celery_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '/logs/app/celery_info.log',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
@@ -235,6 +236,11 @@ LOGGING = {
         'core': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
+            'propagate': True,
+        },
+        'celery': {
+            'handlers': ['console', 'celery_file'],
+            'level': 'INFO',
             'propagate': True,
         },
     },
