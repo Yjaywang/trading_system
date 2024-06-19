@@ -26,6 +26,13 @@ find . -path "*/migrations/*.pyc"  -delete
 docker-compose exec nginx nginx -t
 docker-compose exec nginx nginx -s reload
 
+
+sudo ufw enable
+sudo ufw status
+sudo ufw deny from <ip>
+sudo ufw status numbered
+sudo ufw delete <id>
+
 .env
 ip
 trading_signal.py

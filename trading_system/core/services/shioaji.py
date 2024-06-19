@@ -89,8 +89,23 @@ class ShioajiAPI:
                 logging.error(f"Error getting contract type")
                 raise Exception
 
-    def _get_latest_contract(self, contract_type):
-        return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"]], key=lambda x: x.delivery_date)
+    @staticmethod
+    def _get_latest_contract(contract_type):
+        """For open position use"""
+        today = datetime.now().strftime('%Y/%m/%d')
+        today_date = datetime.strptime(today, '%Y/%m/%d')
+
+        return min([
+            x for x in contract_type
+            if x.code[-2:] not in ["R1", "R2"] and datetime.strptime(x.delivery_date, '%Y/%m/%d') > today_date
+        ],
+                   key=lambda x: datetime.strptime(x.delivery_date, '%Y/%m/%d'))
+
+    @staticmethod
+    def _get_contract_by_code(contract_type, contract_code):
+        """For close position use"""
+        return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"] and x.code == contract_code],
+                   key=lambda x: x.delivery_date)
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
     def _make_a_deal(self, contract, order):
@@ -141,7 +156,7 @@ class ShioajiAPI:
                 raise Exception
 
 
-def _process_deal(trade, contract_code, action):
+def _process_deal(trade, contract_category, action):
     status = trade['status']['status']
     deals = trade['status']['deals']
     if status == 'Filled':
@@ -150,7 +165,7 @@ def _process_deal(trade, contract_code, action):
         avg_deal_price = total_deal_price / total_deal_quantity
         formatted_string = (f"A good deal done\n\n"
                             f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                            f"2. Product: {contract_code}\n"
+                            f"2. Product: {contract_category}\n"
                             f"3. Action: {action}\n"
                             f"4. Avg Price: {avg_deal_price}\n"
                             f"5. Quantity: {total_deal_quantity}")
@@ -163,17 +178,33 @@ def _process_deal(trade, contract_code, action):
         return None
 
 
-def open_position(contract_code, action, quantity): # Buy, Sell
+def _settlement_deal(positions, contract_category, action):
+    for position in positions:
+        data = dict(position)
+        avg_deal_price = data['last_price']
+        total_deal_quantity = data['quantity']
+        cost_price = data['price']
+        formatted_string = (f"A good deal done\n\n"
+                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                            f"2. Product: {contract_category}\n"
+                            f"3. Action: {action}\n"
+                            f"4. Avg Price: {avg_deal_price}\n"
+                            f"5. Quantity: {total_deal_quantity}")
+        push_message(formatted_string)
+        return {'price': avg_deal_price, 'quantity': total_deal_quantity, 'action': action, 'cost_price': cost_price}
+
+
+def open_position(contract_category, action, quantity): # Buy, Sell
     api_wrapper = ShioajiAPI()
     try:
         api_wrapper._initialize_api()
-        contract_type = api_wrapper._get_contract_type(contract_code)
+        contract_type = api_wrapper._get_contract_type(contract_category)
         contract = api_wrapper._get_latest_contract(contract_type)
         current_position = api_wrapper._get_current_position()
         if current_position:
             for position in current_position:
                 data = dict(position)
-                if contract_code in data['code']:
+                if contract_category in data['code']:
                     message = f"position already exists."
                     print(message)
                     push_message(message)
@@ -182,7 +213,7 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         trade = api_wrapper._make_a_deal(contract, order)
         if trade is not None:
             updated_trade = api_wrapper._update_trade_status(trade)
-            return _process_deal(updated_trade, contract_code, action)
+            return _process_deal(updated_trade, contract_category, action)
         return None
     except Exception:
         message = f"Open position error"
@@ -193,38 +224,49 @@ def open_position(contract_code, action, quantity): # Buy, Sell
         api_wrapper._close()
 
 
-def close_position(contract_code):
+def close_position(contract_category):
     api_wrapper = ShioajiAPI()
     try:
         action = ""
         quantity = 0
         cost_price = 0
+        contract_code = ""
         api_wrapper._initialize_api()
-        contract_type = api_wrapper._get_contract_type(contract_code)
+        contract_type = api_wrapper._get_contract_type(contract_category)
         current_position = api_wrapper._get_current_position()
         if not current_position:
             message = "No position in account"
             print(message)
             push_message(message)
             return None
+
         for position in current_position:
             data = dict(position)
-            if contract_code in data['code']:
+            if contract_category in data['code']:
                 action = {'Sell': 'Buy', 'Buy': 'Sell'}.get(data['direction'], '')
                 quantity = data.get('quantity', 0)
                 cost_price = data.get('price', 0)
+                contract_code = data.get('code', '')
                 break
         if not action or not quantity:
             message = 'No matching position found'
             print(message)
             push_message(message)
             return None
-        contract = api_wrapper._get_latest_contract(contract_type)
+
+        contract = api_wrapper._get_contract_by_code(contract_type, contract_code)
+        delivery_date = contract.delivery_date
+        today = datetime.today().strftime('%Y/%m/%d')
+        if delivery_date == today:
+            message = 'Settlement date will close position automatically.'
+            push_message(message)
+            return _settlement_deal(current_position, contract_category, action)
+
         order = api_wrapper._get_order(action, quantity)
         trade = api_wrapper._make_a_deal(contract, order)
         if trade:
             updated_trade = api_wrapper._update_trade_status(trade)
-            deal_result = _process_deal(updated_trade, contract_code, action)
+            deal_result = _process_deal(updated_trade, contract_category, action)
             if deal_result is not None:
                 deal_result['cost_price'] = cost_price
                 return deal_result
