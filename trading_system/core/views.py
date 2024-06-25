@@ -5,9 +5,10 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price
 from .services.analyzer import run_analysis, get_revenue, get_risk_condition
-from .services.order import open_orders, close_orders
+from .services.order import open_orders, close_orders, open_some_orders, close_some_orders
 from .services.line import push_message_test
 from .services.shioaji import get_position, get_api_usage, get_account_margin
+import json
 
 
 @api_view()
@@ -67,6 +68,35 @@ def order(request):
         close_orders()
         print('ok')
         return Response('')
+
+
+@api_view(['POST', 'DELETE'])
+@require_secret_token
+def some_order(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            quantity = data['quantity']
+            if quantity is None:
+                return Response('Missing quantity in request body.', status=400)
+            open_some_orders(quantity)
+            return Response('ok')
+        except json.JSONDecodeError:
+            return Response('Invalid JSON.', status=400)
+        except Exception:
+            return Response('Close order failed.', status=500)
+    elif request.method == 'DELETE':
+        try:
+            data = json.loads(request.body)
+            quantity = data['quantity']
+            if quantity is None:
+                return Response('Missing quantity in request body.', status=400)
+            close_some_orders(quantity)
+            return Response('ok')
+        except json.JSONDecodeError:
+            return Response('Invalid JSON.', status=400)
+        except Exception:
+            return Response('Close order failed.', status=500)
 
 
 @api_view(['POST'])

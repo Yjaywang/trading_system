@@ -33,7 +33,8 @@ sudo ufw deny from <ip>
 sudo ufw status numbered
 sudo ufw delete <id>
 
+files:
 .env
-ip
 trading_signal.py
 .pfx
+nginx.conf

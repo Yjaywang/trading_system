@@ -323,3 +323,64 @@ def get_account_margin():
         return None
     finally:
         api_wrapper._close()
+
+
+def close_some_position(contract_category, quantity):
+    api_wrapper = ShioajiAPI()
+    try:
+        action = ""
+        current_quantity = 0
+        cost_price = 0
+        contract_code = ""
+        api_wrapper._initialize_api()
+        contract_type = api_wrapper._get_contract_type(contract_category)
+        current_position = api_wrapper._get_current_position()
+        if not current_position:
+            message = "No position in account"
+            print(message)
+            push_message(message)
+            return None
+
+        for position in current_position:
+            data = dict(position)
+            if contract_category in data['code']:
+                action = {'Sell': 'Buy', 'Buy': 'Sell'}.get(data['direction'], '')
+                current_quantity = data.get('quantity', 0)
+                cost_price = data.get('price', 0)
+                contract_code = data.get('code', '')
+                break
+        if quantity > current_quantity:
+            message = 'Exceed current position quantity'
+            print(message)
+            push_message(message)
+            return None
+        if not action:
+            message = 'No matching position found'
+            print(message)
+            push_message(message)
+            return None
+
+        contract = api_wrapper._get_contract_by_code(contract_type, contract_code)
+        delivery_date = contract.delivery_date
+        today = datetime.today().strftime('%Y/%m/%d')
+        if delivery_date == today:
+            message = 'Settlement date will close position automatically.'
+            push_message(message)
+            return _settlement_deal(current_position, contract_category, action)
+
+        order = api_wrapper._get_order(action, quantity)
+        trade = api_wrapper._make_a_deal(contract, order)
+        if trade:
+            updated_trade = api_wrapper._update_trade_status(trade)
+            deal_result = _process_deal(updated_trade, contract_category, action)
+            if deal_result is not None:
+                deal_result['cost_price'] = cost_price
+                return deal_result
+        return None
+    except Exception:
+        message = f"Close position error"
+        print(message)
+        push_message(message)
+        return None
+    finally:
+        api_wrapper._close()
