@@ -176,7 +176,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'check-risk-task': {
         'task': 'core.tasks.check_risk_task',
-        'schedule': crontab(minute='45', hour='*'),                                         # every hour:45
+        'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
     },
 }
 
