@@ -1,6 +1,6 @@
 from ..models import OptionData, Signal, Revenue
 from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
-from ..utils.trding_signal import trading_signal_v3, reverse_signal_v1, settlement_signal_v1
+from ..utils.trading_signal import trading_signal_v3, reverse_signal_v1, settlement_signal_v1
 from datetime import datetime, timedelta, time as dt_time, date
 from .line import push_message
 from ..utils.constants import DATE_FORMAT

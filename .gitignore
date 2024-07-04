@@ -1,5 +1,5 @@
 *.csv
-trding_signal.py
+trading_signal.py
 *.pfx
 settlement.json
 celerybeat-schedule.db
