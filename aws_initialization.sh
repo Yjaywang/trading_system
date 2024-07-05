@@ -16,4 +16,8 @@ sudo timedatectl set-timezone Asia/Taipei
 docker --version
 docker-compose --version
 
+cd /home/ubuntu/trading_system
+sudo chmod +x block_ips.sh
+#block malicious ips hourly
+(crontab -l 2>/dev/null | grep -v "/home/ubuntu/trading_system/block_ips.sh"; echo "0 * * * * /home/ubuntu/trading_system/block_ips.sh") | crontab -
 
