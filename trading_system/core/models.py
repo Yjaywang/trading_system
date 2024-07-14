@@ -72,6 +72,9 @@ class Signal(models.Model):
     settlement_signal = models.IntegerField(default=0)
     reverse_signal = models.IntegerField(default=0)
     trading_signal = models.IntegerField()
+    fr_trading_signal = models.IntegerField(default=0)
+    tw_trading_signal = models.IntegerField(default=0)
+    overall_trading_signal = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)          # created time
     updated_at = models.DateTimeField(auto_now=True)              # updated time
 
@@ -147,6 +150,9 @@ class Backtest(models.Model):
     settlement_signal = models.IntegerField()
     reverse_signal = models.IntegerField(default=0)
     trading_signal = models.IntegerField()
+    fr_trading_signal = models.IntegerField(default=0)
+    tw_trading_signal = models.IntegerField(default=0)
+    overall_trading_signal = models.IntegerField(default=0)
     result = models.IntegerField()
     money_status = models.CharField(max_length=10)       # loss, gain, even
     max_loss = models.IntegerField()

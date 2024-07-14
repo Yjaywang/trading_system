@@ -1,6 +1,6 @@
 from ..models import OptionData, Signal, Revenue
 from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
-from ..utils.trading_signal import trading_signal_v3, reverse_signal_v1, settlement_signal_v1
+from ..utils.trading_signal import trading_signal_v4, reverse_signal_v1, settlement_signal_v1, calculate_final_sigal
 from datetime import datetime, timedelta, time as dt_time, date
 from .line import push_message
 from ..utils.constants import DATE_FORMAT
@@ -43,6 +43,14 @@ def run_analysis():
                 call_amount = data['call_amount']
                 put_count = data['put_count']
                 put_amount = data['put_amount']
+                tw_trade_call_count = data['tw_trade_call_count']
+                tw_trade_call_amount = data['tw_trade_call_amount']
+                tw_trade_put_count = data['tw_trade_put_count']
+                tw_trade_put_amount = data['tw_trade_put_amount']
+                fr_trade_call_count = data['fr_trade_call_count']
+                fr_trade_call_amount = data['fr_trade_call_amount']
+                fr_trade_put_count = data['fr_trade_put_count']
+                fr_trade_put_amount = data['fr_trade_put_amount']
 
                 # update previous signal
                 if not is_db_no_data:
@@ -60,11 +68,29 @@ def run_analysis():
                         serializer.save()
                         print('Signal data successfully updated.')
 
-                signal = trading_signal_v3(call_count, call_amount, put_count, put_amount)
+                overall_signal = trading_signal_v4(call_count, call_amount, put_count, put_amount)
+                tw_signal = trading_signal_v4(tw_trade_call_count,
+                                              tw_trade_call_amount,
+                                              tw_trade_put_count,
+                                              tw_trade_put_amount)
+                fr_signal = trading_signal_v4(fr_trade_call_count,
+                                              fr_trade_call_amount,
+                                              fr_trade_put_count,
+                                              fr_trade_put_amount)
+                signals = {
+                    "overall_signal": overall_signal,
+                    "tw_signal": tw_signal,
+                    "fr_signal": fr_signal,
+                    "reverse_signal": reverse_signal
+                }
+                final_signal = calculate_final_sigal(signals)
                 signal_data_obj = {
                     'ref_date': data['date'],
+                    "tw_trading_signal": tw_signal,
+                    "fr_trading_signal": fr_signal,
+                    "overall_trading_signal": overall_signal,
                     'reverse_signal': 1 if reverse_signal else 0,
-                    'trading_signal': signal if not reverse_signal else signal * -1,
+                    'trading_signal': final_signal
                 }
 
                 # search for db existing ref_date
@@ -89,7 +115,9 @@ def run_analysis():
                                f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
                                f"2. ref_date:{signal_data_obj['ref_date']}\n"
                                f"3. trading_signal:{signal_data_obj['trading_signal']}\n"
-                               f"4. reverse_signal:{signal_data_obj['reverse_signal']}\n"
+                               f"4. tw_trading_signal:{signal_data_obj['tw_trading_signal']}\n"
+                               f"5. fr_trading_signal:{signal_data_obj['fr_trading_signal']}\n"
+                               f"6. reverse_signal:{signal_data_obj['reverse_signal']}\n"
                                f"tw_call_count/amount:\n"
                                f"{latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}\n"
                                f"tw_put_count/amount:\n"
