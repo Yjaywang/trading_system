@@ -174,10 +174,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.clear_memory',
         'schedule': crontab(minute='30', hour='*'),                                         # every hour:30
     },
-    'check-risk-task': {
-        'task': 'core.tasks.check_risk_task',
-        'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
-    },
+                                                                                              # 'check-risk-task': {
+                                                                                              #     'task': 'core.tasks.check_risk_task',
+                                                                                              #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
+                                                                                              # },
 }
 
 LOGGING = {
