@@ -22,7 +22,8 @@ def run_analysis():
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
         print("No SingalData found in the database.")
-        latest_date_str = datetime.today().strftime(DATE_FORMAT)
+        # latest_date_str = datetime.today().strftime(DATE_FORMAT)
+        latest_date_str = '2021/06/01'
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
     try:
@@ -81,7 +82,8 @@ def run_analysis():
                     "overall_signal": overall_signal,
                     "tw_signal": tw_signal,
                     "fr_signal": fr_signal,
-                    "reverse_signal": reverse_signal
+                    "reverse_signal": reverse_signal,
+                    'settlement_signal': 1 if settlement_signal else 0,
                 }
                 final_signal = calculate_final_sigal(signals)
                 signal_data_obj = {
