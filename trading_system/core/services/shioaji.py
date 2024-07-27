@@ -36,6 +36,8 @@ class ShioajiAPI:
                     person_id=os.getenv('SHIOAJI_PERSONAL_ID', ''),
                 )
             except Exception:
+                self.api.logout()
+                self.api = None
                 logging.error(f"Error initializing api")
                 raise Exception
 
