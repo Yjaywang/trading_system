@@ -84,6 +84,7 @@ def run_analysis():
                     "fr_signal": fr_signal,
                     "reverse_signal": reverse_signal,
                     'settlement_signal': 1 if settlement_signal else 0,
+                    'option_data': data
                 }
                 final_signal = calculate_final_sigal(signals)
                 signal_data_obj = {
