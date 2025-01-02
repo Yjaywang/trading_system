@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 TRADING_SECRET_TOKEN = os.getenv('TRADING_SECRET_TOKEN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False if os.getenv('APP_ENV') == 'production' else True
+DEBUG = os.getenv('APP_ENV', '').lower() not in ('production', 'dev')
 
 ALLOWED_HOSTS = os.getenv('ALLOW_DOMAIN', 'localhost,127.0.0.1').split(',')
 

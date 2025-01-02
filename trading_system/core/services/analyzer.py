@@ -1,6 +1,6 @@
 from ..models import OptionData, Signal, Revenue
 from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
-from ..utils.trading_signal import trading_signal_v4, reverse_signal_v1, settlement_signal_v1, calculate_final_sigal
+from ..utils.trading_signal import trading_signal_v4, reverse_signal_v1, settlement_signal_v1, calculate_final_signal
 from datetime import datetime, timedelta, time as dt_time, date
 from .line import push_message
 from ..utils.constants import DATE_FORMAT
@@ -85,7 +85,7 @@ def run_analysis():
                     'settlement_signal': 1 if settlement_signal else 0,
                     'option_data': data
                 }
-                final_signal = calculate_final_sigal(signals)
+                final_signal = calculate_final_signal(signals)
                 signal_data_obj = {
                     'ref_date': data['date'],
                     "tw_trading_signal": tw_signal,
