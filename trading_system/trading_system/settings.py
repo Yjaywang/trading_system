@@ -150,14 +150,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.analyzer_task',
         'schedule': crontab(minute='20', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:20
     },
-                                                                                              # 'open-order-task': {
-                                                                                              #     'task': 'core.tasks.open_position_task',
-                                                                                              #     'schedule': crontab(minute='0', hour='15', day_of_week='1-5'),                      # Mon to Fri 15:00
-                                                                                              # },
-                                                                                              # 'close-order-task': {
-                                                                                              #     'task': 'core.tasks.close_position_task',
-                                                                                              #     'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),                     # Mon to Fri 13:44
-                                                                                              # },
+    'open-order-task': {
+        'task': 'core.tasks.open_position_task',
+        'schedule': crontab(minute='01', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:01
+    },
+    'close-order-task': {
+        'task': 'core.tasks.close_position_task',
+        'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),                     # Mon to Fri 13:44
+    },
     'weekly-notify-revenue-task': {
         'task': 'core.tasks.notify_this_week_revenue_task',
         'schedule': crontab(minute='0', hour='17', day_of_week='5'),                        # Fri 17:00
