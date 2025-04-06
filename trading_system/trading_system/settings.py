@@ -146,6 +146,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.price_scraper_task',
         'schedule': crontab(minute='0', hour='16', day_of_week='1-5'),                      # Mon to Fri 16:00
     },
+    'unfulfilled-op-scraper-task': {
+        'task': 'core.tasks.unfulfilled_op_scraper_task',
+        'schedule': crontab(minute='30', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:30
+    },
+    'unfulfilled-future-scraper-task': {
+        'task': 'core.tasks.unfulfilled_future_scraper_task',
+        'schedule': crontab(minute='40', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:40
+    },
     'analyze-signal-task': {
         'task': 'core.tasks.analyzer_task',
         'schedule': crontab(minute='20', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:20

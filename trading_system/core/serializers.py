@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import OptionData, PriceData, Settlement, Signal, Order, Revenue, Backtest
+from .models import OptionData, PriceData, Settlement, Signal, Order, Revenue, Backtest, UnfulfilledOp, UnfulfilledFt
 
 
 class BaseModelSerializer(serializers.ModelSerializer):
@@ -48,3 +48,15 @@ class BacktestSerializer(BaseModelSerializer):
 
     class Meta(BaseModelSerializer.Meta):
         model = Backtest
+
+
+class UnfulfilledOpSerializer(BaseModelSerializer):
+
+    class Meta(BaseModelSerializer.Meta):
+        model = UnfulfilledOp
+
+
+class UnfulfilledFtSerializer(BaseModelSerializer):
+
+    class Meta(BaseModelSerializer.Meta):
+        model = UnfulfilledFt

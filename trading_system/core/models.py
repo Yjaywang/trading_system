@@ -161,3 +161,50 @@ class Backtest(models.Model):
 
     def __str__(self):
         return f'{self.date} - {self.day} - {self.backtest_id}'
+
+
+class UnfulfilledOp(models.Model):
+    DAY_CHOICES = [('Mon', 'Mon'), ('Tue', 'Tue'), ('Wed', 'Wed'), ('Thu', 'Thu'), ('Fri', 'Fri')]
+    OP_TYPE_CHOICES = [('call', 'call'), ('put', 'put')]
+    DIRECTION_CHOICES = [('buy', 'buy'), ('sell', 'sell')]
+    TRADER_CHOICES = [('dt', 'tw'), ('fi', 'fr')]
+
+    unfulfilled_op_id = models.AutoField(primary_key=True)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    date = models.DateField()
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    op_type = models.CharField(max_length=10, choices=OP_TYPE_CHOICES)
+    direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES)
+    trader = models.CharField(max_length=10, choices=TRADER_CHOICES)
+    unfulfilled_count = models.IntegerField()
+    unfulfilled_amount = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True) # created time
+    updated_at = models.DateTimeField(auto_now=True)     # updated time
+
+    def __str__(self):
+        return f'{self.date.strftime("%Y-%m-%d")} - {self.day} - {self.unfulfilled_op_id}'
+
+
+class UnfulfilledFt(models.Model):
+    DAY_CHOICES = [('Mon', 'Mon'), ('Tue', 'Tue'), ('Wed', 'Wed'), ('Thu', 'Thu'), ('Fri', 'Fri')]
+    OP_TYPE_CHOICES = [('call', 'call'), ('put', 'put')]
+    DIRECTION_CHOICES = [('buy', 'buy'), ('sell', 'sell')]
+    TRADER_CHOICES = [('dt', 'tw'), ('it', 'it'), ('fi', 'fr')]
+    FUTURE_NAME_CHOICES = [('TX', '臺股期貨'), ('TE', '電子期貨'), ('TF', '金融期貨'), ('MTX', '小型臺指期貨'), ('SF', '股票期貨'),
+                           ('ETF', 'ETF期貨'), ('subtotal', '期貨小計')]
+
+    unfulfilled_ft_id = models.AutoField(primary_key=True)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    date = models.DateField()
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    trader = models.CharField(max_length=10, choices=TRADER_CHOICES)
+    future_name = models.CharField(max_length=10, choices=FUTURE_NAME_CHOICES)
+    unfulfilled_count = models.IntegerField()
+    unfulfilled_amount = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True) # created time
+    updated_at = models.DateTimeField(auto_now=True)     # updated time
+
+    def __str__(self):
+        return f'{self.date} - {self.day} - {self.unfulfilled_ft_id}'

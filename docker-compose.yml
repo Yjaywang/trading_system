@@ -26,6 +26,7 @@ services:
   app:
     build: .
     image: trading_system_image
+    platform: linux/amd64
     working_dir: /trading_system/trading_system
     command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     volumes:

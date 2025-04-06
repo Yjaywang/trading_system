@@ -1,6 +1,6 @@
 from celery import shared_task
 from datetime import datetime, timedelta
-from .services.scraper import run_op_scraper, run_price_scraper
+from .services.scraper import run_op_scraper, run_price_scraper, run_unfulfilled_op_scraper, run_unfulfilled_future_scraper
 from .services.analyzer import run_analysis, send_this_week_results, send_this_month_results, send_this_year_results,get_risk_condition
 from .services.order import open_orders, close_orders
 from .services.line import push_message
@@ -33,6 +33,24 @@ def price_scraper_task():
         push_message('price scraper done')
     except Exception as e:
         logger.error(f"Error in price_scraper_task: {e}")
+
+
+@shared_task(max_retries=0)
+def unfulfilled_op_scraper_task():
+    try:
+        run_unfulfilled_op_scraper()
+        push_message('unfulfilled_op scraper done')
+    except Exception as e:
+        logger.error(f"Error in unfulfilled_op_task: {e}")
+
+
+@shared_task(max_retries=0)
+def unfulfilled_future_scraper_task():
+    try:
+        run_unfulfilled_future_scraper()
+        push_message('unfulfilled_future scraper done')
+    except Exception as e:
+        logger.error(f"Error in unfulfilled_future_task: {e}")
 
 
 @shared_task(max_retries=0)

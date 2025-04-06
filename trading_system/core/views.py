@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price
+from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price, insert_init_unfulfilled_op,insert_init_unfulfilled_ft
 from .services.analyzer import run_analysis, get_revenue, get_risk_condition
 from .services.order import open_orders, close_orders, open_some_orders, close_some_orders
 from .services.line import push_message_test
@@ -18,9 +18,9 @@ def view_dtl(request):
 
 
 @api_view(['POST'])
-@require_secret_token
+# @require_secret_token
 def test(request):
-    get_risk_condition()
+    insert_init_unfulfilled_ft()
     return Response('')
 
 
