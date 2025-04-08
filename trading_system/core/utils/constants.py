@@ -1,4 +1,5 @@
 DATE_FORMAT = "%Y/%m/%d"
+DATE_FORMAT_2 = "%Y-%m-%d"
 WEEKDAY_TRANSFORM = {
     0: "Mon",
     1: "Tue",

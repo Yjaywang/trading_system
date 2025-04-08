@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timedelta, time as dt_time
 import pandas as pd
 from dotenv import load_dotenv
-from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, SLEEP_DURATION
+from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, SLEEP_DURATION, DATE_FORMAT_2
 from ..models import OptionData, PriceData, Settlement, UnfulfilledOp, UnfulfilledFt
 from ..serializers import OptionDataSerializer, PriceDataSerializer, SettlementSerializer, UnfulfilledOpSerializer, UnfulfilledFtSerializer
 from ..utils.helper import post_form_data, parse_html
@@ -211,7 +211,7 @@ def run_unfulfilled_op_scraper():
         serializer = UnfulfilledOpSerializer(latest_option_data)
         data = dict(serializer.data)
         latest_date_str = data.get('date', datetime.today().strftime(DATE_FORMAT))
-        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT_2)
         start_date = latest_date + timedelta(days=1)
     except UnfulfilledOp.DoesNotExist:
         print("No UnfulfilledOp found in the database.")
@@ -266,8 +266,8 @@ def run_unfulfilled_op_scraper():
                     for direction in directions:
                         for trader in traders:
                             op_data_obj = {}
-                            op_data_obj['year'] = formatted_target_day.split('/')[0],
-                            op_data_obj['month'] = formatted_target_day.split('/')[1],
+                            op_data_obj['year'] = int(formatted_target_day.split('/')[0])
+                            op_data_obj['month'] = int(formatted_target_day.split('/')[1])
                             op_data_obj['date'] = datetime.strptime(formatted_target_day, DATE_FORMAT).date()
                             op_data_obj['day'] = target_day
                             op_data_obj['op_type'] = op_type
@@ -314,7 +314,7 @@ def run_unfulfilled_future_scraper():
         serializer = UnfulfilledFtSerializer(latest_future_data)
         data = dict(serializer.data)
         latest_date_str = data.get('date', datetime.today().strftime(DATE_FORMAT))
-        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT_2)
         start_date = latest_date + timedelta(days=1)
     except UnfulfilledFt.DoesNotExist:
         print("No UnfulfilledFt found in the database.")
@@ -343,8 +343,8 @@ def run_unfulfilled_future_scraper():
             future_result = post_form_data(future_url, form_data)
             future_raw_data = parse_html(future_result)
             if isinstance(future_raw_data, list) and len(future_raw_data) > 0:
+                raw_data_dict = {}
                 for index, future_data in enumerate(future_raw_data):
-                    raw_data_dict = {}
                     if future_data[1] == '臺股期貨':
                         raw_data_dict['tw_TX_unfulfilled_count'] = int(future_data[13].replace(",", ""))
                         raw_data_dict['tw_TX_unfulfilled_amount'] = int(future_data[14].replace(",", ""))
@@ -402,15 +402,14 @@ def run_unfulfilled_future_scraper():
                             ",", ""))
                         raw_data_dict['fr_subtotal_unfulfilled_amount'] = int(future_raw_data[index + 2][12].replace(
                             ",", ""))
-
                 future_names = ['TX', 'TE', 'TF', 'MTX', 'SF', 'ETF', 'subtotal']
                 traders = ['tw', 'it', 'fr']
                 trader_map = {'tw': 'dt', 'fr': 'fi', 'it': 'it'}
                 for future_name in future_names:
                     for trader in traders:
                         future_data_obj = {}
-                        future_data_obj['year'] = formatted_target_day.split('/')[0],
-                        future_data_obj['month'] = formatted_target_day.split('/')[1],
+                        future_data_obj['year'] = int(formatted_target_day.split('/')[0])
+                        future_data_obj['month'] = int(formatted_target_day.split('/')[1])
                         future_data_obj['date'] = datetime.strptime(formatted_target_day, DATE_FORMAT).date()
                         future_data_obj['day'] = target_day
                         data['future_name'] = future_name
