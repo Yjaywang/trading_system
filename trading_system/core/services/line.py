@@ -6,6 +6,8 @@ load_dotenv()
 
 
 def push_message(message):
+    if os.getenv('APP_ENV', '').lower() != 'production':
+        return
     url = f"{os.getenv('LINE_PUSH_MESSAGE_URL')}"
     headers = {
         "Content-Type": "application/json",
@@ -24,6 +26,8 @@ def push_message(message):
 
 
 def push_message_test(message):
+    if os.getenv('APP_ENV', '').lower() != 'production':
+        return
     url = f"{os.getenv('LINE_PUSH_MESSAGE_URL')}"
     headers = {
         "Content-Type": "application/json",
