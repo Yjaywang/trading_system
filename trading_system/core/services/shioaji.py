@@ -15,6 +15,8 @@ ca_file_name = os.getenv('SHIOAJI_CA_FILE_NAME', '')
 current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 ca_file_path = os.path.join(parent_directory, ca_file_name)
+retry_wait_seconds = 10
+retry_attempt_count = 3
 
 
 class ShioajiAPI:
@@ -22,7 +24,7 @@ class ShioajiAPI:
     def __init__(self):
         self.api = sj.Shioaji(simulation=(os.getenv('APP_ENV') != 'production'))
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _initialize_api(self):
         if self.api is not None:
             try:
@@ -41,7 +43,7 @@ class ShioajiAPI:
                 logging.error(f"Error initializing api")
                 raise Exception
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _close(self):
         if self.api is not None:
             try:
@@ -51,7 +53,7 @@ class ShioajiAPI:
                 logging.error(f"Error closing api")
                 raise Exception
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _usage(self):
         if self.api is not None:
             try:
@@ -64,7 +66,7 @@ class ShioajiAPI:
     def _get_action_type(action_type):
         return getattr(sj.constant.Action, action_type, None) # type: ignore
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _get_order(self, action, quantity):
         if self.api is not None:
             try:
@@ -82,7 +84,7 @@ class ShioajiAPI:
                 logging.error(f"Error getting order")
                 raise Exception
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _get_contract_type(self, contract_type):
         if self.api is not None:
             try:
@@ -109,7 +111,7 @@ class ShioajiAPI:
         return min([x for x in contract_type if x.code[-2:] not in ["R1", "R2"] and x.code == contract_code],
                    key=lambda x: x.delivery_date)
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _make_a_deal(self, contract, order):
         if self.api is not None:
             try:
@@ -118,7 +120,7 @@ class ShioajiAPI:
                 logging.error(f"Error making a deal")
                 raise Exception
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _get_current_position(self):
         if self.api is not None and self.api.futopt_account:
             try:
@@ -127,7 +129,7 @@ class ShioajiAPI:
                 logging.error(f"Error getting positions")
                 raise Exception
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _get_current_margin(self):
         if self.api is not None and self.api.futopt_account:
             try:
@@ -136,7 +138,7 @@ class ShioajiAPI:
                 logging.error(f"Error getting margin")
                 raise Exception
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(5), reraise=True)
+    @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
     def _update_trade_status(self, trade):
         if self.api is not None:
             try:
