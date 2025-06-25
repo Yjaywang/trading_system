@@ -412,10 +412,12 @@ def run_unfulfilled_future_scraper():
                         future_data_obj['month'] = int(formatted_target_day.split('/')[1])
                         future_data_obj['date'] = datetime.strptime(formatted_target_day, DATE_FORMAT).date()
                         future_data_obj['day'] = target_day
-                        data['future_name'] = future_name
-                        data['trader'] = trader_map[trader]
-                        data['unfulfilled_count'] = raw_data_dict[f'{trader}_{future_name}_unfulfilled_count']
-                        data['unfulfilled_amount'] = raw_data_dict[f'{trader}_{future_name}_unfulfilled_amount']
+                        future_data_obj['future_name'] = future_name
+                        future_data_obj['trader'] = trader_map[trader]
+                        future_data_obj['unfulfilled_count'] = raw_data_dict[
+                            f'{trader}_{future_name}_unfulfilled_count']
+                        future_data_obj['unfulfilled_amount'] = raw_data_dict[
+                            f'{trader}_{future_name}_unfulfilled_amount']
                         future_data_objs.append(future_data_obj)
             time.sleep(SLEEP_DURATION)
             current_date += timedelta(days=1)
