@@ -135,60 +135,61 @@ CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Taipei' # set taiwan time
-CELERY_BEAT_SCHEDULE = {}
+CELERY_TIMEZONE = 'Asia/Taipei'                                                               # set taiwan time
+CELERY_BEAT_SCHEDULE = {
+    'op-scraper-task': {
+        'task': 'core.tasks.op_scraper_task',
+        'schedule': crontab(minute='10', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:10
+    },
+    'price-scraper-task': {
+        'task': 'core.tasks.price_scraper_task',
+        'schedule': crontab(minute='0', hour='16', day_of_week='1-5'),                      # Mon to Fri 16:00
+    },
+    'unfulfilled-op-scraper-task': {
+        'task': 'core.tasks.unfulfilled_op_scraper_task',
+        'schedule': crontab(minute='30', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:30
+    },
+    'unfulfilled-future-scraper-task': {
+        'task': 'core.tasks.unfulfilled_future_scraper_task',
+        'schedule': crontab(minute='40', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:40
+    },
+    'analyze-signal-task': {
+        'task': 'core.tasks.analyzer_task',
+        'schedule': crontab(minute='20', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:20
+    },
+    'weekly-notify-revenue-task': {
+        'task': 'core.tasks.notify_this_week_revenue_task',
+        'schedule': crontab(minute='0', hour='17', day_of_week='5'),                        # Fri 17:00
+    },
+    'monthly-notify-revenue-task': {
+        'task': 'core.tasks.check_and_notify_month_end',
+        'schedule': crontab(minute='10', hour='17'),                                        # 17:10
+    },
+    'yearly-notify-revenue-task': {
+        'task': 'core.tasks.notify_this_year_revenue_task',
+        'schedule': crontab(minute='20', hour='17', day_of_month='31', month_of_year='12'), # Year end 17:20
+    },
+                                                                                              # 'gc-taks-task': {
+                                                                                              #     'task': 'core.tasks.clear_memory',
+                                                                                              #     'schedule': crontab(minute='30', hour='*'),                                         # every hour:30
+                                                                                              # },
+                                                                                              # 'check-risk-task': {
+                                                                                              #     'task': 'core.tasks.check_risk_task',
+                                                                                              #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
+                                                                                              # },
+}
 
 if os.getenv('APP_ENV', '').lower() == 'production':
-    CELERY_BEAT_SCHEDULE = {
-        'op-scraper-task': {
-            'task': 'core.tasks.op_scraper_task',
-            'schedule': crontab(minute='10', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:10
-        },
-        'price-scraper-task': {
-            'task': 'core.tasks.price_scraper_task',
-            'schedule': crontab(minute='0', hour='16', day_of_week='1-5'),                      # Mon to Fri 16:00
-        },
-        'unfulfilled-op-scraper-task': {
-            'task': 'core.tasks.unfulfilled_op_scraper_task',
-            'schedule': crontab(minute='30', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:30
-        },
-        'unfulfilled-future-scraper-task': {
-            'task': 'core.tasks.unfulfilled_future_scraper_task',
-            'schedule': crontab(minute='40', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:40
-        },
-        'analyze-signal-task': {
-            'task': 'core.tasks.analyzer_task',
-            'schedule': crontab(minute='20', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:20
-        },
+    CELERY_BEAT_SCHEDULE.update({
         'open-order-task': {
             'task': 'core.tasks.open_position_task',
-            'schedule': crontab(minute='01', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:01
+            'schedule': crontab(minute='1', hour='15', day_of_week='1-5'),
         },
         'close-order-task': {
             'task': 'core.tasks.close_position_task',
-            'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),                     # Mon to Fri 13:44
+            'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),
         },
-        'weekly-notify-revenue-task': {
-            'task': 'core.tasks.notify_this_week_revenue_task',
-            'schedule': crontab(minute='0', hour='17', day_of_week='5'),                        # Fri 17:00
-        },
-        'monthly-notify-revenue-task': {
-            'task': 'core.tasks.check_and_notify_month_end',
-            'schedule': crontab(minute='10', hour='17'),                                        # 17:10
-        },
-        'yearly-notify-revenue-task': {
-            'task': 'core.tasks.notify_this_year_revenue_task',
-            'schedule': crontab(minute='20', hour='17', day_of_month='31', month_of_year='12'), # Year end 17:20
-        },
-                                                                                                  # 'gc-taks-task': {
-                                                                                                  #     'task': 'core.tasks.clear_memory',
-                                                                                                  #     'schedule': crontab(minute='30', hour='*'),                                         # every hour:30
-                                                                                                  # },
-                                                                                                  # 'check-risk-task': {
-                                                                                                  #     'task': 'core.tasks.check_risk_task',
-                                                                                                  #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
-                                                                                                  # },
-    }
+    })
 
 # LOGGING = {
 #     'version': 1,
