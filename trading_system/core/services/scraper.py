@@ -8,7 +8,7 @@ from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, SLEEP_DURATION, DA
 from ..models import OptionData, PriceData, Settlement, UnfulfilledOp, UnfulfilledFt
 from ..serializers import OptionDataSerializer, PriceDataSerializer, SettlementSerializer, UnfulfilledOpSerializer, UnfulfilledFtSerializer
 from ..utils.helper import post_form_data, parse_html
-from .line import push_message
+from ..middleware.error_decorators import core_logger
 
 load_dotenv()
 
@@ -23,7 +23,7 @@ def run_op_scraper():
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date + timedelta(days=1)
     except OptionData.DoesNotExist:
-        print("No OptionData found in the database.")
+        core_logger.error("No OptionData found in the database.")
         latest_date_str = datetime.today().strftime(DATE_FORMAT)
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
@@ -34,7 +34,7 @@ def run_op_scraper():
         while current_date <= end_date:
             formatted_target_day = current_date.strftime(DATE_FORMAT)
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
-            print(formatted_target_day)
+            core_logger.info(formatted_target_day)
 
             op_url = f"{os.getenv('OPTION_DATA_API')}"
             form_data = {
@@ -87,16 +87,16 @@ def run_op_scraper():
             # filter new data
             new_data = [item for item in op_data_objs if item['date'] not in existing_set]
             if not new_data:
-                print('sync option data already exist in db')
+                core_logger.info('sync option data already exist in db')
                 return
             serializer = OptionDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 OptionData.objects.bulk_create([OptionData(**item) for item in serializer.data])
-                print("Option data successfully saved.")
+                core_logger.info("Option data successfully saved.")
             else:
-                print(f'sync option data validation error: {serializer.errors}')
+                core_logger.error(f'sync option data validation error: {serializer.errors}')
     except Exception as e:
-        print(f"sync option data error: {e}")
+        core_logger.error(f"sync option data error: {e}")
 
 
 def run_price_scraper():
@@ -114,7 +114,7 @@ def run_price_scraper():
         else:
             start_date = latest_date + timedelta(days=1)
     except PriceData.DoesNotExist:
-        print("No PriceData found in the database.")
+        core_logger.error("No PriceData found in the database.")
         latest_date_str = datetime.today().strftime(DATE_FORMAT)
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
@@ -133,7 +133,7 @@ def run_price_scraper():
             formatted_target_day = current_date.strftime(DATE_FORMAT)
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             market_url = f"{os.getenv('MARKET_PRICE_DATA_API')}"
-            print(formatted_target_day)
+            core_logger.info(formatted_target_day)
 
             for market_period in market_periods:
                 form_data = {
@@ -180,16 +180,16 @@ def run_price_scraper():
             # filter new data
             new_data = [item for item in market_data_objs if (item['date'], item['period']) not in existing_set]
             if not new_data:
-                print('sync price data already exist in db')
+                core_logger.info('sync price data already exist in db')
                 return
             serializer = PriceDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 PriceData.objects.bulk_create([PriceData(**item) for item in serializer.data])
-                print("Price data successfully saved.")
+                core_logger.info("Price data successfully saved.")
             else:
-                print(f'sync price data validation error: {serializer.errors}')
+                core_logger.error(f'sync price data validation error: {serializer.errors}')
     except Exception as e:
-        print(f'sync price data error: {e}')
+        core_logger.error(f'sync price data error: {e}')
 
 
 def run_unfulfilled_op_scraper():
@@ -202,7 +202,7 @@ def run_unfulfilled_op_scraper():
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT_2)
         start_date = latest_date + timedelta(days=1)
     except UnfulfilledOp.DoesNotExist:
-        print("No UnfulfilledOp found in the database.")
+        core_logger.error("No UnfulfilledOp found in the database.")
         latest_date_str = datetime.today().strftime(DATE_FORMAT)
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
@@ -213,7 +213,7 @@ def run_unfulfilled_op_scraper():
         while current_date <= end_date:
             formatted_target_day = current_date.strftime(DATE_FORMAT)
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
-            print(formatted_target_day)
+            core_logger.info(formatted_target_day)
 
             op_url = f"{os.getenv('OPTION_DATA_API')}"
             form_data = {
@@ -277,16 +277,16 @@ def run_unfulfilled_op_scraper():
             # filter new data
             new_data = [item for item in op_data_objs if item['date'] not in existing_set]
             if not new_data:
-                print('sync unfulfilled option data already exist in db')
+                core_logger.info('sync unfulfilled option data already exist in db')
                 return
             serializer = UnfulfilledOpSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 UnfulfilledOp.objects.bulk_create([UnfulfilledOp(**item) for item in serializer.data])
-                print("unfulfilled option data successfully saved.")
+                core_logger.info("unfulfilled option data successfully saved.")
             else:
-                print(f'sync unfulfilled option data validation error: {serializer.errors}')
+                core_logger.error(f'sync unfulfilled option data validation error: {serializer.errors}')
     except Exception as e:
-        print(f"sync unfulfilled option data error: {e}")
+        core_logger.error(f"sync unfulfilled option data error: {e}")
 
 
 def run_unfulfilled_future_scraper():
@@ -299,7 +299,7 @@ def run_unfulfilled_future_scraper():
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT_2)
         start_date = latest_date + timedelta(days=1)
     except UnfulfilledFt.DoesNotExist:
-        print("No UnfulfilledFt found in the database.")
+        core_logger.error("No UnfulfilledFt found in the database.")
         latest_date_str = datetime.today().strftime(DATE_FORMAT)
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
@@ -310,7 +310,7 @@ def run_unfulfilled_future_scraper():
         while current_date <= end_date:
             formatted_target_day = current_date.strftime(DATE_FORMAT)
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
-            print(formatted_target_day)
+            core_logger.info(formatted_target_day)
 
             future_url = f"{os.getenv('FUTURE_DATA_API')}"
             form_data = {
@@ -413,16 +413,16 @@ def run_unfulfilled_future_scraper():
             # filter new data
             new_data = [item for item in future_data_objs if item['date'] not in existing_set]
             if not new_data:
-                print('sync unfulfilled future data already exist in db')
+                core_logger.info('sync unfulfilled future data already exist in db')
                 return
             serializer = UnfulfilledFtSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 UnfulfilledFt.objects.bulk_create([UnfulfilledFt(**item) for item in serializer.data])
-                print("unfulfilled future data successfully saved.")
+                core_logger.info("unfulfilled future data successfully saved.")
             else:
-                print(f'sync unfulfilled future data validation error: {serializer.errors}')
+                core_logger.error(f'sync unfulfilled future data validation error: {serializer.errors}')
     except Exception as e:
-        print(f"sync unfulfilled future data error: {e}")
+        core_logger.error(f"sync unfulfilled future data error: {e}")
 
 
 def insert_settlement_date():
@@ -456,17 +456,17 @@ def insert_settlement_date():
             # filter new data
             new_data = [item for item in settlement_date_objs if item['date'] not in existing_set]
             if not new_data:
-                print(f'sync settlement already exist in db')
+                core_logger.info(f'sync settlement already exist in db')
                 return
 
             serializer = SettlementSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 Settlement.objects.bulk_create([Settlement(**item) for item in serializer.data])
-                print("Settlement date successfully saved.")
+                core_logger.info("Settlement date successfully saved.")
             else:
-                print(f'sync settlement validation error: {serializer.errors}')
+                core_logger.error(f'sync settlement validation error: {serializer.errors}')
     except Exception as e:
-        print(f'sync settlement error: {e}')
+        core_logger.error(f'sync settlement error: {e}')
 
 
 #bulk insert from csv
@@ -513,13 +513,11 @@ def insert_init_op():
             serializer = OptionDataSerializer(data=option_objs, many=True)
             if serializer.is_valid():
                 OptionData.objects.bulk_create([OptionData(**item) for item in serializer.data])
-                print("Settlement date successfully saved.")
+                core_logger.info("Settlement date successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
-
+                core_logger.error(f"Validation errors occurred: {serializer.errors}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        core_logger.error(f"An unexpected error occurred: {e}")
 
 
 def insert_init_price():
@@ -590,13 +588,12 @@ def insert_init_price():
             serializer = PriceDataSerializer(data=price_objs, many=True)
             if serializer.is_valid():
                 PriceData.objects.bulk_create([PriceData(**item) for item in serializer.data])
-                print("Settlement date successfully saved.")
+                core_logger.info("Settlement date successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
+                core_logger.error(f"Validation errors occurred: {serializer.errors}")
 
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        core_logger.error(f"An unexpected error occurred: {e}")
 
 
 #bulk insert from csv
@@ -667,13 +664,12 @@ def insert_init_unfulfilled_op():
             serializer = UnfulfilledOpSerializer(data=option_objs, many=True)
             if serializer.is_valid():
                 UnfulfilledOp.objects.bulk_create([UnfulfilledOp(**item) for item in serializer.data])
-                print("unfulfilled op data successfully saved.")
+                core_logger.info("unfulfilled op data successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
+                core_logger.error(f"Validation errors occurred: {serializer.errors}")
 
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        core_logger.error(f"An unexpected error occurred: {e}")
 
 
 def insert_init_unfulfilled_ft():
@@ -767,10 +763,9 @@ def insert_init_unfulfilled_ft():
             serializer = UnfulfilledFtSerializer(data=future_objs, many=True)
             if serializer.is_valid():
                 UnfulfilledFt.objects.bulk_create([UnfulfilledFt(**item) for item in serializer.data])
-                print("unfulfilled future data successfully saved.")
+                core_logger.info("unfulfilled future data successfully saved.")
             else:
-                print("Validation errors occurred.")
-                print(serializer.errors)
+                core_logger.error(f"Validation errors occurred: {serializer.errors}")
 
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        core_logger.error(f"An unexpected error occurred: {e}")

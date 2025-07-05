@@ -4,12 +4,11 @@ from .services.scraper import run_op_scraper, run_price_scraper, run_unfulfilled
 from .services.analyzer import run_analysis, send_this_week_results, send_this_month_results, send_this_year_results,get_risk_condition
 from .services.order import open_orders, close_orders
 from .services.line import push_message
-import logging
 from django.core.cache import cache
 from .utils.constants import DAILY_CRON_STATUS, EMOJI_MAP, DATE_FORMAT_2
 from datetime import date
+from .middleware.error_decorators import celery_log_task_status
 
-logger = logging.getLogger('celery')
 default_daily_cron_status = {
     'op_scraper_task': EMOJI_MAP['failure'],
     'price_scraper_task': EMOJI_MAP['failure'],
@@ -22,93 +21,80 @@ default_daily_cron_status = {
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def op_scraper_task():
-    try:
-        run_op_scraper()
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['op_scraper_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in op_scraper_task: {e}")
+    run_op_scraper()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['op_scraper_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def price_scraper_task():
-    try:
-        run_price_scraper()
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['price_scraper_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in price_scraper_task: {e}")
+    run_price_scraper()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['price_scraper_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def unfulfilled_op_scraper_task():
-    try:
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['unfulfilled_op_scraper_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in unfulfilled_op_task: {e}")
+    run_unfulfilled_op_scraper()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['unfulfilled_op_scraper_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def unfulfilled_future_scraper_task():
-    try:
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['unfulfilled_future_scraper_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in unfulfilled_future_task: {e}")
+    run_unfulfilled_future_scraper()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['unfulfilled_future_scraper_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def analyzer_task():
-    try:
-        run_analysis()
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['analyzer_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in analyzer_task: {e}")
+    run_analysis()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['analyzer_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def open_position_task():
-    try:
-        open_orders()
-        run_analysis()
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['open_position_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in open_position_task: {e}")
+    open_orders()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['open_position_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def close_position_task():
-    try:
-        close_orders()
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status is None:
-            daily_cron_status = default_daily_cron_status.copy()
-        daily_cron_status['close_position_task'] = EMOJI_MAP['success']
-        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-    except Exception as e:
-        logger.error(f"Error in close_position_task: {e}")
+    close_orders()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status['close_position_task'] = EMOJI_MAP['success']
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
 @shared_task
@@ -119,48 +105,37 @@ def check_and_notify_month_end():
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def notify_this_week_revenue_task():
-    try:
-        send_this_week_results()
-    except Exception as e:
-        logger.error(f"Error in notify_this_week_revenue_task: {e}")
+    send_this_week_results()
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def notify_this_month_revenue_task():
-    try:
-        send_this_month_results()
-    except Exception as e:
-        logger.error(f"Error in notify_this_month_revenue_task: {e}")
+    send_this_month_results()
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def notify_this_year_revenue_task():
-    try:
-        send_this_year_results()
-    except Exception as e:
-        logger.error(f"Error in notify_this_year_revenue_task: {e}")
+    send_this_year_results()
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def check_risk_task():
-    try:
-        get_risk_condition()
-    except Exception as e:
-        logger.error(f"Error in check_risk_task: {e}")
+    get_risk_condition()
 
 
 @shared_task(max_retries=0)
+@celery_log_task_status
 def daily_notification_task():
-    try:
-        daily_cron_status = cache.get(DAILY_CRON_STATUS)
-        if daily_cron_status:
-            messages = []
-            for key, value in daily_cron_status.items():
-                messages.append(f"{key}: {value}")
-            joined_messages = '\n'.join(messages)
-            formatted_date = date.today().strftime(DATE_FORMAT_2)
-
-            push_message(f"{formatted_date}\n{joined_messages}")
-    except Exception as e:
-        logger.error(f"Error in analyzer_task: {e}")
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status:
+        messages = []
+        for key, value in daily_cron_status.items():
+            messages.append(f"{key}: {value}")
+        joined_messages = '\n'.join(messages)
+        formatted_date = date.today().strftime(DATE_FORMAT_2)
+        push_message(f"{formatted_date}\n{joined_messages}")

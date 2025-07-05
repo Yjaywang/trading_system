@@ -9,6 +9,7 @@ from .shioaji import open_position, close_position, close_some_position
 from dotenv import load_dotenv
 from ..types import BubbleMessage
 import random
+from ..middleware.error_decorators import core_logger
 
 load_dotenv()
 
@@ -37,7 +38,7 @@ def _record_deal(deal, contract_code, action):
     if serializer.is_valid():
         serializer.save()
     else:
-        print(f"Order serialization failed: {serializer.errors}")
+        core_logger.error(f"Order serialization failed: {serializer.errors}")
 
 
 def _record_revenue(deal, contract_code, action):
@@ -66,7 +67,7 @@ def _record_revenue(deal, contract_code, action):
         serializer.save()
         return revenue_data_obj
     else:
-        print(f"Revenue serialization failed: {serializer.errors}")
+        core_logger.error(f"Revenue serialization failed: {serializer.errors}")
         return None
 
 
@@ -86,19 +87,19 @@ def open_orders():
                     _record_deal(deal_result, contract_code, action)
                 else:
                     message = 'Deal is in trouble, please check your account'
-                    print(message)
+                    core_logger.error(message)
                     push_message(message)
             else:
                 message = 'Signal is none, please check db'
-                print(message)
+                core_logger.error(message)
                 push_message(message)
         else:
             message = 'Not latest signal, please check db'
-            print(message)
+            core_logger.error(message)
             push_message(message)
     except Exception as e:
         message = f"Place order error: {e}"
-        print(message)
+        core_logger.error(message)
         push_message(message)
 
 
@@ -130,11 +131,11 @@ def close_orders():
                 push_bubble_message(bubble_message)
         else:
             message = 'Deal is in trouble, please check your account'
-            print(message)
+            core_logger.error(message)
             push_message(message)
     except Exception as e:
         message = f"Close order error: {e}"
-        print(message)
+        core_logger.error(message)
         push_message(message)
 
 
@@ -153,19 +154,19 @@ def open_some_orders(quantity):
                     _record_deal(deal_result, contract_code, action)
                 else:
                     message = 'Deal is in trouble, please check your account'
-                    print(message)
+                    core_logger.error(message)
                     push_message(message)
             else:
                 message = 'Signal is none, please check db'
-                print(message)
+                core_logger.error(message)
                 push_message(message)
         else:
             message = 'Not latest signal, please check db'
-            print(message)
+            core_logger.error(message)
             push_message(message)
     except Exception as e:
         message = f"Place order error: {e}"
-        print(message)
+        core_logger.error(message)
         push_message(message)
 
 
@@ -197,9 +198,9 @@ def close_some_orders(quantity):
                 push_bubble_message(bubble_message)
         else:
             message = 'Deal is in trouble, please check your account'
-            print(message)
+            core_logger.error(message)
             push_message(message)
     except Exception as e:
         message = f"Close order error: {e}"
-        print(message)
+        core_logger.error(message)
         push_message(message)

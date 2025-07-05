@@ -2,7 +2,7 @@ from ..models import OptionData, Signal, Revenue
 from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
 from ..utils.trading_signal import trading_signal_v4, reverse_signal_v1, settlement_signal_v1, calculate_final_signal
 from datetime import datetime, timedelta, time as dt_time, date
-from .line import push_message, push_bubble_message
+from .line import push_bubble_message
 from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
 from ..utils.trump_words import TRUMP_STYLE_TRADING_CONGRATS, TRUMP_STYLE_LOSS_COMFORTS, TRUMP_STYLE_MARGIN_CALL_JOKES
 from django.db.models import Sum
@@ -10,6 +10,7 @@ from django.db.models.functions import ExtractWeek, ExtractMonth
 from .shioaji import get_account_margin
 from ..types import BubbleMessage
 import random
+from ..middleware.error_decorators import core_logger
 
 
 def run_analysis():
@@ -18,13 +19,13 @@ def run_analysis():
         latest_signal_data = Signal.objects.latest('created_at')
         is_db_no_data = False
         if latest_signal_data.date is not None:
-            print('no latest signal')
+            core_logger.info('no latest signal')
             return
         latest_date_str = latest_signal_data.ref_date
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date + timedelta(days=1)
     except Signal.DoesNotExist:
-        print("No SingalData found in the database.")
+        core_logger.info("No SignalData found in the database.")
         latest_date_str = datetime.today().strftime(DATE_FORMAT)
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
         start_date = latest_date
@@ -33,7 +34,7 @@ def run_analysis():
         current_date = start_date
         while current_date <= end_date:
             formatted_target_day = current_date.strftime(DATE_FORMAT)
-            print(formatted_target_day)
+            core_logger.info(formatted_target_day)
 
             option_data = OptionData.objects.filter(date=formatted_target_day)
             option_serializer = OptionDataSerializer(option_data, many=True)
@@ -69,7 +70,7 @@ def run_analysis():
                     # latest_signal_data.date need to be null
                     if serializer.is_valid() and not latest_signal_data.date:
                         serializer.save()
-                        print('Signal data successfully updated.')
+                        core_logger.info('Signal data successfully updated.')
 
                 overall_signal = trading_signal_v4(call_count, call_amount, put_count, put_amount)
                 tw_signal = trading_signal_v4(tw_trade_call_count,
@@ -106,10 +107,9 @@ def run_analysis():
                     if serializer.is_valid():
                         serializer.save()
                         is_db_no_data = False
-                        print("Signal data successfully saved.")
+                        core_logger.info("Signal data successfully saved.")
                     else:
-                        print("Validation errors occurred.")
-                        print(serializer.errors)
+                        core_logger.error(f"Validation errors occurred. {serializer.errors}")
 
                 if current_date.date() == datetime.today().date():
                     latest_op = OptionData.objects.latest('created_at')
@@ -143,7 +143,7 @@ def run_analysis():
                     push_bubble_message(bubble_message)
             current_date += timedelta(days=1)
     except Exception as e:
-        print(f"sync signal data error: {e}")
+        core_logger.error(f"sync signal data error: {e}")
 
 
 def _get_current_weekday_dates():
@@ -276,7 +276,6 @@ def get_risk_condition():
         initial_margin = margin_dict['initial_margin']
         equity_amount = margin_dict['equity_amount']
         available_margin = margin_dict['available_margin']
-        print(initial_margin != 0)
         if initial_margin != 0:
             if available_margin <= 0:
                 bubble_message: BubbleMessage = {

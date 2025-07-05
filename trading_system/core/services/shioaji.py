@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 from .line import push_message, push_bubble_message
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
-import logging
 from ..utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
 from ..types import BubbleMessage
 import random
+from ..middleware.error_decorators import core_logger
 
 load_dotenv()
 
@@ -43,7 +43,7 @@ class ShioajiAPI:
             except Exception:
                 self.api.logout()
                 self.api = None
-                logging.error(f"Error initializing api")
+                core_logger.error(f"Error initializing api")
                 raise Exception
 
     @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
@@ -53,7 +53,7 @@ class ShioajiAPI:
                 self.api.logout()
                 self.api = None
             except Exception:
-                logging.error(f"Error closing api")
+                core_logger.error(f"Error closing api")
                 raise Exception
 
     @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
@@ -62,7 +62,7 @@ class ShioajiAPI:
             try:
                 return self.api.usage()
             except Exception:
-                logging.error(f"Error fetching usage")
+                core_logger.error(f"Error fetching usage")
                 raise Exception
 
     @staticmethod
@@ -84,7 +84,7 @@ class ShioajiAPI:
                         octype=sj.constant.FuturesOCType.Auto,       # type: ignore
                         account=self.api.futopt_account)
             except Exception:
-                logging.error(f"Error getting order")
+                core_logger.error(f"Error getting order")
                 raise Exception
 
     @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
@@ -93,7 +93,7 @@ class ShioajiAPI:
             try:
                 return getattr(self.api.Contracts.Futures, contract_type, None)
             except Exception:
-                logging.error(f"Error getting contract type")
+                core_logger.error(f"Error getting contract type")
                 raise Exception
 
     @staticmethod
@@ -120,7 +120,7 @@ class ShioajiAPI:
             try:
                 return self.api.place_order(contract, order, timeout=0)
             except Exception:
-                logging.error(f"Error making a deal")
+                core_logger.error(f"Error making a deal")
                 raise Exception
 
     @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
@@ -129,7 +129,7 @@ class ShioajiAPI:
             try:
                 return self.api.list_positions(account=self.api.futopt_account, timeout=20000)
             except Exception:
-                logging.error(f"Error getting positions")
+                core_logger.error(f"Error getting positions")
                 raise Exception
 
     @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
@@ -138,7 +138,7 @@ class ShioajiAPI:
             try:
                 return self.api.margin(account=self.api.futopt_account, timeout=20000)
             except Exception:
-                logging.error(f"Error getting margin")
+                core_logger.error(f"Error getting margin")
                 raise Exception
 
     @retry(stop=stop_after_attempt(retry_attempt_count), wait=wait_fixed(retry_wait_seconds), reraise=True)
@@ -159,7 +159,7 @@ class ShioajiAPI:
                     time.sleep(5)
                 return dict(trade)
             except Exception:
-                logging.error(f"Error updating trade status")
+                core_logger.error(f"Error updating trade status")
                 raise Exception
 
 

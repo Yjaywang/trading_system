@@ -6,9 +6,9 @@ from rest_framework import status
 from .services.scraper import run_op_scraper, run_price_scraper, insert_settlement_date, insert_init_op, insert_init_price, insert_init_unfulfilled_op,insert_init_unfulfilled_ft
 from .services.analyzer import run_analysis, get_revenue, get_risk_condition
 from .services.order import open_orders, close_orders, open_some_orders, close_some_orders
-from .services.line import push_message_test
 from .services.shioaji import get_position, get_api_usage, get_account_margin
 import json
+from .middleware.error_decorators import core_logger
 
 
 @api_view()
@@ -18,7 +18,7 @@ def view_dtl(request):
 
 
 @api_view(['POST'])
-# @require_secret_token
+@require_secret_token
 def test(request):
     insert_init_unfulfilled_ft()
     return Response('')
@@ -82,8 +82,10 @@ def some_order(request):
             open_some_orders(quantity)
             return Response('ok')
         except json.JSONDecodeError:
+            core_logger.error('Invalid JSON in request body.')
             return Response('Invalid JSON.', status=400)
         except Exception:
+            core_logger.error('Close order failed.')
             return Response('Close order failed.', status=500)
     elif request.method == 'DELETE':
         try:
@@ -94,8 +96,10 @@ def some_order(request):
             close_some_orders(quantity)
             return Response('ok')
         except json.JSONDecodeError:
+            core_logger.error('Invalid JSON in request body.')
             return Response('Invalid JSON.', status=400)
         except Exception:
+            core_logger.error('Close order failed.')
             return Response('Close order failed.', status=500)
 
 

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from ..utils.constants import LINE_BUBBLE_MESSAGE_TEMPLATE
 from ..types import BubbleMessage
 from distutils.util import strtobool
+from ..middleware.error_decorators import core_logger
 
 load_dotenv()
 
@@ -23,9 +24,9 @@ def push_message(message):
         response.raise_for_status() # 4xx 5xx error
         return response.json()
     except requests.exceptions.HTTPError as http_err:
-        print(f"LINE HTTP error occurred: {http_err}")
+        core_logger.error(f"LINE HTTP error occurred: {http_err}")
     except Exception as err:
-        print(f"LINE Other error occurred: {err}")
+        core_logger.error(f"LINE Other error occurred: {err}")
 
 
 def push_bubble_message(message: BubbleMessage):
@@ -51,6 +52,6 @@ def push_bubble_message(message: BubbleMessage):
         response.raise_for_status() # 4xx 5xx error
         return response.json()
     except requests.exceptions.HTTPError as http_err:
-        print(f"LINE HTTP error occurred: {http_err}")
+        core_logger.error(f"LINE HTTP error occurred: {http_err}")
     except Exception as err:
-        print(f"LINE Other error occurred: {err}")
+        core_logger.error(f"LINE Other error occurred: {err}")
