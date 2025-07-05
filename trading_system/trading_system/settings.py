@@ -129,6 +129,20 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",         # Redis database 1
+        "OPTIONS": {
+            "CONNECTION_POOL_KWARGS": {
+                "max_connections": 100
+            },
+        },
+        "TIMEOUT": 3600,
+        "KEY_PREFIX": 'trading_system',
+    }
+}
+
 # Celery settings
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
@@ -157,6 +171,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.analyzer_task',
         'schedule': crontab(minute='20', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:20
     },
+    'daily-notification-task': {
+        'task': 'core.tasks.daily_notification_task',
+        'schedule': crontab(minute='00', hour='17', day_of_week='1-5'),                     # Mon to Fri 17:00
+    },
     'weekly-notify-revenue-task': {
         'task': 'core.tasks.notify_this_week_revenue_task',
         'schedule': crontab(minute='0', hour='17', day_of_week='5'),                        # Fri 17:00
@@ -169,10 +187,6 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.notify_this_year_revenue_task',
         'schedule': crontab(minute='20', hour='17', day_of_month='31', month_of_year='12'), # Year end 17:20
     },
-                                                                                              # 'gc-taks-task': {
-                                                                                              #     'task': 'core.tasks.clear_memory',
-                                                                                              #     'schedule': crontab(minute='30', hour='*'),                                         # every hour:30
-                                                                                              # },
                                                                                               # 'check-risk-task': {
                                                                                               #     'task': 'core.tasks.check_risk_task',
                                                                                               #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15

@@ -2,11 +2,14 @@ from ..models import OptionData, Signal, Revenue
 from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
 from ..utils.trading_signal import trading_signal_v4, reverse_signal_v1, settlement_signal_v1, calculate_final_signal
 from datetime import datetime, timedelta, time as dt_time, date
-from .line import push_message
-from ..utils.constants import DATE_FORMAT
+from .line import push_message, push_bubble_message
+from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
+from ..utils.trump_words import TRUMP_STYLE_TRADING_CONGRATS, TRUMP_STYLE_LOSS_COMFORTS, TRUMP_STYLE_MARGIN_CALL_JOKES
 from django.db.models import Sum
-from django.db.models.functions import ExtractWeek, ExtractYear, ExtractMonth
+from django.db.models.functions import ExtractWeek, ExtractMonth
 from .shioaji import get_account_margin
+from ..types import BubbleMessage
+import random
 
 
 def run_analysis():
@@ -107,36 +110,40 @@ def run_analysis():
                     else:
                         print("Validation errors occurred.")
                         print(serializer.errors)
-                        push_message(f'sync signal data validation error: {serializer.errors}')
 
                 if current_date.date() == datetime.today().date():
                     latest_op = OptionData.objects.latest('created_at')
                     latest_op_data_serializer = OptionDataSerializer(latest_op)
                     latest_op_data = dict(latest_op_data_serializer.data)
-                    message = (f"A good analsis done for you\n\n"
-                               f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                               f"2. ref_date:{signal_data_obj['ref_date']}\n"
-                               f"3. trading_signal:{signal_data_obj['trading_signal']}\n"
-                               f"4. tw_trading_signal:{signal_data_obj['tw_trading_signal']}\n"
-                               f"5. fr_trading_signal:{signal_data_obj['fr_trading_signal']}\n"
-                               f"6. reverse_signal:{signal_data_obj['reverse_signal']}\n"
-                               f"tw_call_count/amount:\n"
-                               f"{latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}\n"
-                               f"tw_put_count/amount:\n"
-                               f"{latest_op_data['tw_trade_put_count']} / {latest_op_data['tw_trade_put_amount']}\n"
-                               f"fr_call_count/amount:\n"
-                               f"{latest_op_data['fr_trade_call_count']} / {latest_op_data['fr_trade_call_amount']}\n"
-                               f"fr_put_count/amount:\n"
-                               f"{latest_op_data['fr_trade_put_count']} / {latest_op_data['fr_trade_put_amount']}\n"
-                               f"call_count/amount:\n"
-                               f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}\n"
-                               f"put_count/amount:\n"
-                               f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}")
-                    push_message(message)
+                    bubble_message: BubbleMessage = {
+                        'header': f"Today's analysis for you",
+                        'body': (
+                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                            f"2. ref_date:{signal_data_obj['ref_date']}\n"
+                            f"3. trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}\n"
+                            f"4. tw_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['tw_trading_signal']]}\n"
+                            f"5. fr_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['fr_trading_signal']]}\n"
+                            f"6. reverse_signal:{EMOJI_MAP['success'] if signal_data_obj['reverse_signal']==1 else EMOJI_MAP['failure']}\n"
+                            f"tw_call_count/amount:\n"
+                            f"tw_put_count/amount:\n"
+                            f"{latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}\n"
+                            f"{latest_op_data['tw_trade_put_count']} / {latest_op_data['tw_trade_put_amount']}\n"
+                            f"\n"
+                            f"fr_call_count/amount:\n"
+                            f"fr_put_count/amount:\n"
+                            f"{latest_op_data['fr_trade_call_count']} / {latest_op_data['fr_trade_call_amount']}\n"
+                            f"{latest_op_data['fr_trade_put_count']} / {latest_op_data['fr_trade_put_amount']}\n"
+                            f"\n"
+                            f"call_count/amount:\n"
+                            f"put_count/amount:\n"
+                            f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}\n"
+                            f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}"),
+                        'footer': f"Suggest to do: {TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}"
+                    }
+                    push_bubble_message(bubble_message)
             current_date += timedelta(days=1)
     except Exception as e:
         print(f"sync signal data error: {e}")
-        push_message(f'sync signal data error: {e}')
 
 
 def _get_current_weekday_dates():
@@ -213,32 +220,53 @@ def _get_this_year_revenue():
 
 def send_this_week_results():
     data = _get_this_week_revenue()
-    message = (f"{data['current_year']} week {data['current_week']} result:\n\n"
-               f"From: {data['start_date']}\n"
-               f"To: {data['end_date']}\n"
-               f"1. Gain price: {data['total_gain_price']}\n"
-               f"2. Revenue: {data['total_revenue']}")
-    push_message(message)
+    bubble_message: BubbleMessage = {
+        "header":
+            f"{data['current_year']} week {data['current_week']} result",
+        "body": (f"From: {data['start_date']}\n"
+                 f"To: {data['end_date']}\n"
+                 f"1. Gain price: {data['total_gain_price']}\n"
+                 f"2. Revenue: {data['total_revenue']}"),
+        "footer":
+            f"{EMOJI_MAP['up_chart']}{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
+            if data['total_revenue'] >= 0 else
+            f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+    }
+    push_bubble_message(bubble_message)
 
 
 def send_this_month_results():
     data = _get_this_month_revenue()
-    message = (f"{data['current_year']}/{data['current_month']} result:\n\n"
-               f"From: {data['start_date']}\n"
-               f"To: {data['end_date']}\n"
-               f"1. Gain price: {data['total_gain_price']}\n"
-               f"2. Revenue: {data['total_revenue']}")
-    push_message(message)
+    bubble_message: BubbleMessage = {
+        "header":
+            f"{data['current_year']}/{data['current_month']} result",
+        "body": (f"From: {data['start_date']}\n"
+                 f"To: {data['end_date']}\n"
+                 f"1. Gain price: {data['total_gain_price']}\n"
+                 f"2. Revenue: {data['total_revenue']}"),
+        "footer":
+            f"{EMOJI_MAP['up_chart']}{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
+            if data['total_revenue'] >= 0 else
+            f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+    }
+    push_bubble_message(bubble_message)
 
 
 def send_this_year_results():
     data = _get_this_year_revenue()
-    message = (f"{data['current_year']} result:\n\n"
-               f"From: {data['start_date']}\n"
-               f"To: {data['end_date']}\n"
-               f"1. Gain price: {data['total_gain_price']}\n"
-               f"2. Revenue: {data['total_revenue']}")
-    push_message(message)
+    bubble_message: BubbleMessage = {
+        "header":
+            f"{data['current_year']} result",
+        "body": (f"From: {data['start_date']}\n"
+                 f"To: {data['end_date']}\n"
+                 f"1. Gain price: {data['total_gain_price']}\n"
+                 f"2. Revenue: {data['total_revenue']}"),
+        "footer":
+            f"{EMOJI_MAP['up_chart']}{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
+            if data['total_revenue'] >= 0 else
+            f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+    }
+    push_bubble_message(bubble_message)
 
 
 def get_risk_condition():
@@ -251,16 +279,20 @@ def get_risk_condition():
         print(initial_margin != 0)
         if initial_margin != 0:
             if available_margin <= 0:
-                message = (f"!!!Warning!!!\n\n"
-                           f"available_margin: {available_margin}\n"
-                           f"less than 0")
-                push_message(message)
+                bubble_message: BubbleMessage = {
+                    "header": "!!!Warning!!!",
+                    "body": (f"1. available_margin: {available_margin}\n"
+                             f"2. initial_margin: {initial_margin}\n"
+                             f"3. equity_amount: {equity_amount}"),
+                    "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES)
+                }
+                push_bubble_message(bubble_message)
             if equity_amount / initial_margin < 1.7:
-                message = (f"!!!Warning!!!\n\n"
-                           f"margin ratio: {round(equity_amount / initial_margin,2)}\n"
-                           f"less than 1.7")
-                push_message(message)
-
-
-def back_test():
-    pass
+                bubble_message: BubbleMessage = {
+                    "header": "!!!Warning!!!",
+                    "body": (f"1. equity_amount: {equity_amount}\n"
+                             f"2. initial_margin: {initial_margin}\n"
+                             f"3. margin ratio: {round(equity_amount / initial_margin, 2)}"),
+                    "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES)
+                }
+                push_bubble_message(bubble_message)

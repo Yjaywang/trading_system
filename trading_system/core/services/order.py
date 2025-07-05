@@ -2,10 +2,13 @@ import os
 from datetime import datetime
 from ..models import Signal
 from ..serializers import OrderSerializer, SignalSerializer, RevenueSerializer
-from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE
-from .line import push_message
+from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE, EMOJI_MAP
+from ..utils.trump_words import TRUMP_STYLE_TRADING_CONGRATS, TRUMP_STYLE_LOSS_COMFORTS
+from .line import push_message, push_bubble_message
 from .shioaji import open_position, close_position, close_some_position
 from dotenv import load_dotenv
+from ..types import BubbleMessage
+import random
 
 load_dotenv()
 
@@ -34,9 +37,7 @@ def _record_deal(deal, contract_code, action):
     if serializer.is_valid():
         serializer.save()
     else:
-        message = f"Order serialization failed: {serializer.errors}"
-        print(message)
-        push_message(message)
+        print(f"Order serialization failed: {serializer.errors}")
 
 
 def _record_revenue(deal, contract_code, action):
@@ -65,9 +66,7 @@ def _record_revenue(deal, contract_code, action):
         serializer.save()
         return revenue_data_obj
     else:
-        message = f"Revenue serialization failed: {serializer.errors}"
-        print(message)
-        push_message(message)
+        print(f"Revenue serialization failed: {serializer.errors}")
         return None
 
 
@@ -112,16 +111,23 @@ def close_orders():
             _record_deal(deal_result, contract_code, action)
             revenue_data = _record_revenue(deal_result, contract_code, action)
             if revenue_data is not None:
-                formatted_string = (f"Today's revenue:\n\n"
-                                    f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                                    f"2. product: {contract_code}\n"
-                                    f"3. quantity: {revenue_data['quantity']}\n"
-                                    f"4. direction: {revenue_data['direction']}\n"
-                                    f"5. open_price: {revenue_data['open_price']}\n"
-                                    f"6. close_price: {revenue_data['close_price']}\n"
-                                    f"7. gain_price: {revenue_data['gain_price']}\n"
-                                    f"8. revenue: {revenue_data['revenue']}\n")
-                push_message(formatted_string)
+                bubble_message: BubbleMessage = {
+                    "header":
+                        "Today's revenue",
+                    "body": (f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                             f"2. product: {contract_code}\n"
+                             f"3. quantity: {revenue_data['quantity']}\n"
+                             f"4. direction: {revenue_data['direction']}\n"
+                             f"5. open_price: {revenue_data['open_price']}\n"
+                             f"6. close_price: {revenue_data['close_price']}\n"
+                             f"7. gain_price: {revenue_data['gain_price']}\n"
+                             f"8. revenue: {revenue_data['revenue']}"),
+                    "footer":
+                        f"{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
+                        if revenue_data['revenue'] > 0 else
+                        f"{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+                }
+                push_bubble_message(bubble_message)
         else:
             message = 'Deal is in trouble, please check your account'
             print(message)
@@ -172,16 +178,23 @@ def close_some_orders(quantity):
             _record_deal(deal_result, contract_code, action)
             revenue_data = _record_revenue(deal_result, contract_code, action)
             if revenue_data is not None:
-                formatted_string = (f"Today's revenue:\n\n"
-                                    f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                                    f"2. product: {contract_code}\n"
-                                    f"3. quantity: {revenue_data['quantity']}\n"
-                                    f"4. direction: {revenue_data['direction']}\n"
-                                    f"5. open_price: {revenue_data['open_price']}\n"
-                                    f"6. close_price: {revenue_data['close_price']}\n"
-                                    f"7. gain_price: {revenue_data['gain_price']}\n"
-                                    f"8. revenue: {revenue_data['revenue']}\n")
-                push_message(formatted_string)
+                bubble_message: BubbleMessage = {
+                    "header":
+                        "Today's revenue",
+                    "body": (f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                             f"2. product: {contract_code}\n"
+                             f"3. quantity: {revenue_data['quantity']}\n"
+                             f"4. direction: {revenue_data['direction']}\n"
+                             f"5. open_price: {revenue_data['open_price']}\n"
+                             f"6. close_price: {revenue_data['close_price']}\n"
+                             f"7. gain_price: {revenue_data['gain_price']}\n"
+                             f"8. revenue: {revenue_data['revenue']}"),
+                    "footer":
+                        f"{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
+                        if revenue_data['revenue'] > 0 else
+                        f"{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+                }
+                push_bubble_message(bubble_message)
         else:
             message = 'Deal is in trouble, please check your account'
             print(message)

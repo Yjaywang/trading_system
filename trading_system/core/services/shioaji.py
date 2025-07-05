@@ -2,10 +2,13 @@ import shioaji as sj
 import os
 import time
 from dotenv import load_dotenv
-from .line import push_message
+from .line import push_message, push_bubble_message
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
 import logging
+from ..utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
+from ..types import BubbleMessage
+import random
 
 load_dotenv()
 
@@ -167,13 +170,16 @@ def _process_deal(trade, contract_category, action):
         total_deal_price = sum(deal['price'] * deal['quantity'] for deal in deals)
         total_deal_quantity = sum(deal['quantity'] for deal in deals)
         avg_deal_price = total_deal_price / total_deal_quantity
-        formatted_string = (f"A good deal done\n\n"
-                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                            f"2. Product: {contract_category}\n"
-                            f"3. Action: {action}\n"
-                            f"4. Avg Price: {avg_deal_price}\n"
-                            f"5. Quantity: {total_deal_quantity}")
-        push_message(formatted_string)
+        bubble_message: BubbleMessage = {
+            "header": f" Deal start",
+            "body": (f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                     f"2. Product: {contract_category}\n"
+                     f"3. Action: {action}\n"
+                     f"4. Avg Price: {avg_deal_price}\n"
+                     f"5. Quantity: {total_deal_quantity}"),
+            "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}"
+        }
+        push_bubble_message(bubble_message)
         return {'price': avg_deal_price, 'quantity': total_deal_quantity, 'action': action}
     else:
         message = 'Trade is not filled.'
@@ -188,13 +194,16 @@ def _settlement_deal(positions, contract_category, action):
         avg_deal_price = data['last_price']
         total_deal_quantity = data['quantity']
         cost_price = data['price']
-        formatted_string = (f"A good deal done\n\n"
-                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                            f"2. Product: {contract_category}\n"
-                            f"3. Action: {action}\n"
-                            f"4. Avg Price: {avg_deal_price}\n"
-                            f"5. Quantity: {total_deal_quantity}")
-        push_message(formatted_string)
+        bubble_message: BubbleMessage = {
+            "header": f" Deal end",
+            "body": (f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
+                     f"2. Product: {contract_category}\n"
+                     f"3. Action: {action}\n"
+                     f"4. Avg Price: {avg_deal_price}\n"
+                     f"5. Quantity: {total_deal_quantity}"),
+            "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}"
+        }
+        push_bubble_message(bubble_message)
         return {'price': avg_deal_price, 'quantity': total_deal_quantity, 'action': action, 'cost_price': cost_price}
 
 

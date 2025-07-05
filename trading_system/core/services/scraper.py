@@ -87,22 +87,16 @@ def run_op_scraper():
             # filter new data
             new_data = [item for item in op_data_objs if item['date'] not in existing_set]
             if not new_data:
-                message = 'sync option data already exist in db'
-                print(message)
-                push_message(message)
+                print('sync option data already exist in db')
                 return
             serializer = OptionDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 OptionData.objects.bulk_create([OptionData(**item) for item in serializer.data])
                 print("Option data successfully saved.")
             else:
-                message = f'sync option data validation error: {serializer.errors}'
-                print(message)
-                push_message(message)
+                print(f'sync option data validation error: {serializer.errors}')
     except Exception as e:
-        message = f"sync option data error: {e}"
-        print(message)
-        push_message(message)
+        print(f"sync option data error: {e}")
 
 
 def run_price_scraper():
@@ -186,22 +180,16 @@ def run_price_scraper():
             # filter new data
             new_data = [item for item in market_data_objs if (item['date'], item['period']) not in existing_set]
             if not new_data:
-                message = 'sync price data already exist in db'
-                print(message)
-                push_message(message)
+                print('sync price data already exist in db')
                 return
             serializer = PriceDataSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 PriceData.objects.bulk_create([PriceData(**item) for item in serializer.data])
                 print("Price data successfully saved.")
             else:
-                message = f'sync price data validation error: {serializer.errors}'
-                print(message)
-                push_message(message)
+                print(f'sync price data validation error: {serializer.errors}')
     except Exception as e:
-        message = f'sync price data error: {e}'
-        print(message)
-        push_message(message)
+        print(f'sync price data error: {e}')
 
 
 def run_unfulfilled_op_scraper():
@@ -289,22 +277,16 @@ def run_unfulfilled_op_scraper():
             # filter new data
             new_data = [item for item in op_data_objs if item['date'] not in existing_set]
             if not new_data:
-                message = 'sync unfulfilled option data already exist in db'
-                print(message)
-                push_message(message)
+                print('sync unfulfilled option data already exist in db')
                 return
             serializer = UnfulfilledOpSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 UnfulfilledOp.objects.bulk_create([UnfulfilledOp(**item) for item in serializer.data])
                 print("unfulfilled option data successfully saved.")
             else:
-                message = f'sync unfulfilled option data validation error: {serializer.errors}'
-                print(message)
-                push_message(message)
+                print(f'sync unfulfilled option data validation error: {serializer.errors}')
     except Exception as e:
-        message = f"sync unfulfilled option data error: {e}"
-        print(message)
-        push_message(message)
+        print(f"sync unfulfilled option data error: {e}")
 
 
 def run_unfulfilled_future_scraper():
@@ -431,22 +413,16 @@ def run_unfulfilled_future_scraper():
             # filter new data
             new_data = [item for item in future_data_objs if item['date'] not in existing_set]
             if not new_data:
-                message = 'sync unfulfilled future data already exist in db'
-                print(message)
-                push_message(message)
+                print('sync unfulfilled future data already exist in db')
                 return
             serializer = UnfulfilledFtSerializer(data=new_data, many=True)
             if serializer.is_valid():
                 UnfulfilledFt.objects.bulk_create([UnfulfilledFt(**item) for item in serializer.data])
                 print("unfulfilled future data successfully saved.")
             else:
-                message = f'sync unfulfilled future data validation error: {serializer.errors}'
-                print(message)
-                push_message(message)
+                print(f'sync unfulfilled future data validation error: {serializer.errors}')
     except Exception as e:
-        message = f"sync unfulfilled future data error: {e}"
-        print(message)
-        push_message(message)
+        print(f"sync unfulfilled future data error: {e}")
 
 
 def insert_settlement_date():
@@ -480,9 +456,7 @@ def insert_settlement_date():
             # filter new data
             new_data = [item for item in settlement_date_objs if item['date'] not in existing_set]
             if not new_data:
-                message = f'sync settlement already exist in db'
-                print(message)
-                push_message(message)
+                print(f'sync settlement already exist in db')
                 return
 
             serializer = SettlementSerializer(data=new_data, many=True)
@@ -490,13 +464,9 @@ def insert_settlement_date():
                 Settlement.objects.bulk_create([Settlement(**item) for item in serializer.data])
                 print("Settlement date successfully saved.")
             else:
-                message = f'sync settlement validation error: {serializer.errors}'
-                print(message)
-                push_message(message)
+                print(f'sync settlement validation error: {serializer.errors}')
     except Exception as e:
-        message = f'sync settlement error: {e}'
-        print(message)
-        push_message(message)
+        print(f'sync settlement error: {e}')
 
 
 #bulk insert from csv
