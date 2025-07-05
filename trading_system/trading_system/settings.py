@@ -187,23 +187,19 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'core.tasks.notify_this_year_revenue_task',
         'schedule': crontab(minute='20', hour='17', day_of_month='31', month_of_year='12'), # Year end 17:20
     },
+    'open-order-task': {
+        'task': 'core.tasks.open_position_task',
+        'schedule': crontab(minute='1', hour='15', day_of_week='1-5'),
+    },
+    'close-order-task': {
+        'task': 'core.tasks.close_position_task',
+        'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),
+    },
                                                                                               # 'check-risk-task': {
                                                                                               #     'task': 'core.tasks.check_risk_task',
                                                                                               #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
                                                                                               # },
 }
-
-if os.getenv('APP_ENV', '').lower() == 'production':
-    CELERY_BEAT_SCHEDULE.update({
-        'open-order-task': {
-            'task': 'core.tasks.open_position_task',
-            'schedule': crontab(minute='1', hour='15', day_of_week='1-5'),
-        },
-        'close-order-task': {
-            'task': 'core.tasks.close_position_task',
-            'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),
-        },
-    })
 
 LOGGING = {
     'version': 1,
