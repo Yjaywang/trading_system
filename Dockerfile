@@ -1,17 +1,35 @@
-FROM python:3.10
+# Stage 1: Build a virtual environment and install dependencies
+FROM python:3.10-slim AS builder
+
+WORKDIR /opt/venv
+
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv .
+ENV PATH="/opt/venv/bin:$PATH"
+
+# --no-cache-dir to save space
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: Build the final image with the application code and virtual environment
+FROM python:3.10-slim
 
 WORKDIR /trading_system
 
-COPY requirements.txt .
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends supervisor && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip
-
-RUN pip install -r requirements.txt
+COPY --from=builder /opt/venv /opt/venv
 
 COPY . .
 
-RUN apt-get update && apt-get install -y supervisor
-
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+EXPOSE 8000
+EXPOSE 5555
+
+CMD ["/usr/bin/supervisord","-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

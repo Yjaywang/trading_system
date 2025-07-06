@@ -34,6 +34,8 @@ ALLOWED_HOSTS = os.getenv('ALLOW_DOMAIN', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 
+REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -132,7 +134,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",         # Redis database 1
+        "LOCATION": f"redis://{REDIS_HOST}:6379/1", # Redis database 1
         "OPTIONS": {
             "CONNECTION_POOL_KWARGS": {
                 "max_connections": 100
@@ -144,8 +146,8 @@ CACHES = {
 }
 
 # Celery settings
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/0"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/0"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

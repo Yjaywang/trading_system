@@ -3,15 +3,19 @@
 .gitignore
 
 # Docker
+.dockerignore
 Dockerfile
 docker-compose.yml
+nginx.conf
+
 
 # Python
 __pycache__/
 *.pyc
-.venv/
-pip-cache/
+.venv
+venv/
 
-# IDE
-.vscode/
-.idea/
+# Local files
+logs/
+*.log
+.env

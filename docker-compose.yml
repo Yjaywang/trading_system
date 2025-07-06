@@ -3,8 +3,6 @@ version: '3'
 services:
   redis:
     image: redis:alpine
-    ports:
-      - "6379:6379"
     deploy:
       resources:
         limits:
@@ -16,11 +14,17 @@ services:
         max-size: "10m"
         max-file: "3"
     volumes:
+      - redis-data:/data
       - ./logs/redis_logs:/var/log/redis
     networks:
       - app-network
     environment:
       - TZ=Asia/Taipei
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
 
   app:
@@ -28,15 +32,15 @@ services:
     image: trading_system_image
     platform: linux/amd64
     working_dir: /trading_system/trading_system
-    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
     volumes:
-      - .:/trading_system
+      # - .:/trading_system
       - ./logs/app:/logs/app
     ports:
       - "8000:8000"
       - "5555:5555"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -51,6 +55,7 @@ services:
       - app-network
     environment:
       - TZ=Asia/Taipei
+      - REDIS_HOST=redis
     restart: always
 
   nginx:
@@ -80,3 +85,6 @@ services:
 
 networks:
   app-network:
+
+volumes:
+  redis-data:

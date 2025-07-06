@@ -1,3 +1,4 @@
+docker-compose.override.yml
 cheat_sheet.txt
 *.csv
 trading_signal.py
@@ -169,3 +170,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 .qodo
+
+
+# SSL Certificates and Keys
+*.key
+*.pem
+*.crt
+.htpasswd
