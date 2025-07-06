@@ -103,7 +103,7 @@ TRUMP_STYLE_FUNNY_TRADE_BLESSINGS = [
     "Everyone’s chasing alpha. You ARE the alpha.",
     "Even the SEC wants to subscribe to your trades.",
     "Charts are complex, but you? You’re SIMPLE. Simply winning!",
-    "The economy? It’s just your demo account now."
+    "The economy? It’s just your demo account now.",
 ]
 
 TRUMP_STYLE_TRADING_CONGRATS = [
@@ -214,7 +214,7 @@ TRUMP_STYLE_TRADING_CONGRATS = [
     "Goldman Sachs called. They want your strategy.",
     "I’m gonna build a wall... to stop you from taking all the profits!",
     "All-time high? You are the all-time high.",
-    "That wasn’t just a pump. That was a Trump pump."
+    "That wasn’t just a pump. That was a Trump pump.",
 ]
 
 TRUMP_STYLE_LOSS_COMFORTS = [
@@ -515,5 +515,5 @@ TRUMP_STYLE_MARGIN_CALL_JOKES = [
     "I'm a dealmaker. The best dealmaker. I'll make a deal with this margin call.",
     "This margin call is probably a mistake. A big mistake.",
     "They're calling me about a margin call? They should be calling me for advice!",
-    "I've overcome bigger things than a margin call. Much, much bigger."
+    "I've overcome bigger things than a margin call. Much, much bigger.",
 ]

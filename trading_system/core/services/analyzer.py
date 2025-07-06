@@ -1,10 +1,19 @@
 from ..models import OptionData, Signal, Revenue
 from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
-from ..utils.trading_signal import trading_signal_v4, reverse_signal_v1, settlement_signal_v1, calculate_final_signal
+from ..utils.trading_signal import (
+    trading_signal_v4,
+    reverse_signal_v1,
+    settlement_signal_v1,
+    calculate_final_signal,
+)
 from datetime import datetime, timedelta, time as dt_time, date
 from .line import push_bubble_message
 from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
-from ..utils.trump_words import TRUMP_STYLE_TRADING_CONGRATS, TRUMP_STYLE_LOSS_COMFORTS, TRUMP_STYLE_MARGIN_CALL_JOKES
+from ..utils.trump_words import (
+    TRUMP_STYLE_TRADING_CONGRATS,
+    TRUMP_STYLE_LOSS_COMFORTS,
+    TRUMP_STYLE_MARGIN_CALL_JOKES,
+)
 from django.db.models import Sum
 from django.db.models.functions import ExtractWeek, ExtractMonth
 from .shioaji import get_account_margin
@@ -16,10 +25,10 @@ from ..middleware.error_decorators import core_logger
 def run_analysis():
     is_db_no_data = True
     try:
-        latest_signal_data = Signal.objects.latest('created_at')
+        latest_signal_data = Signal.objects.latest("created_at")
         is_db_no_data = False
         if latest_signal_data.date is not None:
-            core_logger.info('no latest signal')
+            core_logger.info("no latest signal")
             return
         latest_date_str = latest_signal_data.ref_date
         latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
@@ -43,64 +52,74 @@ def run_analysis():
 
             if len(option_serializer.data) > 0:
                 data = option_serializer.data[0]
-                call_count = data['call_count']
-                call_amount = data['call_amount']
-                put_count = data['put_count']
-                put_amount = data['put_amount']
-                tw_trade_call_count = data['tw_trade_call_count']
-                tw_trade_call_amount = data['tw_trade_call_amount']
-                tw_trade_put_count = data['tw_trade_put_count']
-                tw_trade_put_amount = data['tw_trade_put_amount']
-                fr_trade_call_count = data['fr_trade_call_count']
-                fr_trade_call_amount = data['fr_trade_call_amount']
-                fr_trade_put_count = data['fr_trade_put_count']
-                fr_trade_put_amount = data['fr_trade_put_amount']
+                call_count = data["call_count"]
+                call_amount = data["call_amount"]
+                put_count = data["put_count"]
+                put_amount = data["put_amount"]
+                tw_trade_call_count = data["tw_trade_call_count"]
+                tw_trade_call_amount = data["tw_trade_call_amount"]
+                tw_trade_put_count = data["tw_trade_put_count"]
+                tw_trade_put_amount = data["tw_trade_put_amount"]
+                fr_trade_call_count = data["fr_trade_call_count"]
+                fr_trade_call_amount = data["fr_trade_call_amount"]
+                fr_trade_put_count = data["fr_trade_put_count"]
+                fr_trade_put_amount = data["fr_trade_put_amount"]
 
                 # update previous signal
                 if not is_db_no_data:
-                    latest_signal_data = Signal.objects.latest('created_at')
+                    latest_signal_data = Signal.objects.latest("created_at")
                     update_signal_data_obj = {
-                        'year': data['year'],
-                        'month': data['month'],
-                        'date': data['date'],
-                        'day': data['day'],
-                        'settlement_signal': 1 if settlement_signal else 0,
+                        "year": data["year"],
+                        "month": data["month"],
+                        "date": data["date"],
+                        "day": data["day"],
+                        "settlement_signal": 1 if settlement_signal else 0,
                     }
-                    serializer = SignalSerializer(latest_signal_data, data=update_signal_data_obj, partial=True)
+                    serializer = SignalSerializer(
+                        latest_signal_data, data=update_signal_data_obj, partial=True
+                    )
                     # latest_signal_data.date need to be null
                     if serializer.is_valid() and not latest_signal_data.date:
                         serializer.save()
-                        core_logger.info('Signal data successfully updated.')
+                        core_logger.info("Signal data successfully updated.")
 
-                overall_signal = trading_signal_v4(call_count, call_amount, put_count, put_amount)
-                tw_signal = trading_signal_v4(tw_trade_call_count,
-                                              tw_trade_call_amount,
-                                              tw_trade_put_count,
-                                              tw_trade_put_amount)
-                fr_signal = trading_signal_v4(fr_trade_call_count,
-                                              fr_trade_call_amount,
-                                              fr_trade_put_count,
-                                              fr_trade_put_amount)
+                overall_signal = trading_signal_v4(
+                    call_count, call_amount, put_count, put_amount
+                )
+                tw_signal = trading_signal_v4(
+                    tw_trade_call_count,
+                    tw_trade_call_amount,
+                    tw_trade_put_count,
+                    tw_trade_put_amount,
+                )
+                fr_signal = trading_signal_v4(
+                    fr_trade_call_count,
+                    fr_trade_call_amount,
+                    fr_trade_put_count,
+                    fr_trade_put_amount,
+                )
                 signals = {
                     "overall_signal": overall_signal,
                     "tw_signal": tw_signal,
                     "fr_signal": fr_signal,
                     "reverse_signal": reverse_signal,
-                    'settlement_signal': 1 if settlement_signal else 0,
-                    'option_data': data
+                    "settlement_signal": 1 if settlement_signal else 0,
+                    "option_data": data,
                 }
                 final_signal = calculate_final_signal(signals)
                 signal_data_obj = {
-                    'ref_date': data['date'],
+                    "ref_date": data["date"],
                     "tw_trading_signal": tw_signal,
                     "fr_trading_signal": fr_signal,
                     "overall_trading_signal": overall_signal,
-                    'reverse_signal': 1 if reverse_signal else 0,
-                    'trading_signal': final_signal
+                    "reverse_signal": 1 if reverse_signal else 0,
+                    "trading_signal": final_signal,
                 }
 
                 # search for db existing ref_date
-                is_existing = Signal.objects.filter(ref_date=signal_data_obj['ref_date']).exists()
+                is_existing = Signal.objects.filter(
+                    ref_date=signal_data_obj["ref_date"]
+                ).exists()
                 ## insert latest signal
                 if not is_existing:
                     serializer = SignalSerializer(data=signal_data_obj)
@@ -109,15 +128,17 @@ def run_analysis():
                         is_db_no_data = False
                         core_logger.info("Signal data successfully saved.")
                     else:
-                        core_logger.error(f"Validation errors occurred. {serializer.errors}")
+                        core_logger.error(
+                            f"Validation errors occurred. {serializer.errors}"
+                        )
 
                 if current_date.date() == datetime.today().date():
-                    latest_op = OptionData.objects.latest('created_at')
+                    latest_op = OptionData.objects.latest("created_at")
                     latest_op_data_serializer = OptionDataSerializer(latest_op)
                     latest_op_data = dict(latest_op_data_serializer.data)
                     bubble_message: BubbleMessage = {
-                        'header': f"Today's analysis for you",
-                        'body': (
+                        "header": f"Today's analysis for you",
+                        "body": (
                             f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
                             f"2. ref_date:{signal_data_obj['ref_date']}\n"
                             f"3. trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}\n"
@@ -137,8 +158,9 @@ def run_analysis():
                             f"call_count/amount:\n"
                             f"put_count/amount:\n"
                             f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}\n"
-                            f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}"),
-                        'footer': f"Suggest to do: {TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}"
+                            f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}"
+                        ),
+                        "footer": f"Suggest to do: {TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}",
                     }
                     push_bubble_message(bubble_message)
             current_date += timedelta(days=1)
@@ -148,8 +170,8 @@ def run_analysis():
 
 def _get_current_weekday_dates():
     now = datetime.now()
-    start_of_week = now - timedelta(days=now.weekday()) # get Monday
-    end_of_week = start_of_week + timedelta(days=4)     # get Friday
+    start_of_week = now - timedelta(days=now.weekday())  # get Monday
+    end_of_week = start_of_week + timedelta(days=4)  # get Friday
     return start_of_week.strftime(DATE_FORMAT), end_of_week.strftime(DATE_FORMAT)
 
 
@@ -170,67 +192,75 @@ def get_revenue(time_filter):
     current_month = now.month
     current_week = now.isocalendar()[1]
 
-    if time_filter == 'week':
+    if time_filter == "week":
         start_date, end_date = _get_current_weekday_dates()
-    elif time_filter == 'month':
+    elif time_filter == "month":
         start_date, end_date = _get_current_month_dates(current_year, current_month)
-    elif time_filter == 'year':
+    elif time_filter == "year":
         start_date = date(current_year, 1, 1)
         end_date = date(current_year, 12, 31)
     else:
         raise ValueError("Invalid time filter. Choose from 'week', 'month', 'year'.")
 
-    if time_filter == 'week':
+    if time_filter == "week":
         current_revenue = (
-            Revenue.objects.filter(created_at__year=current_year).annotate(week_num=ExtractWeek('created_at')).filter(
-                week_num=current_week).aggregate(total_revenue=Sum('revenue'), total_gain_price=Sum('gain_price')))
-    elif time_filter == 'month':
+            Revenue.objects.filter(created_at__year=current_year)
+            .annotate(week_num=ExtractWeek("created_at"))
+            .filter(week_num=current_week)
+            .aggregate(total_revenue=Sum("revenue"), total_gain_price=Sum("gain_price"))
+        )
+    elif time_filter == "month":
         current_revenue = (
-            Revenue.objects.filter(created_at__year=current_year).annotate(month_num=ExtractMonth('created_at')).filter(
-                month_num=current_month).aggregate(total_revenue=Sum('revenue'), total_gain_price=Sum('gain_price')))
-    elif time_filter == 'year':
-        current_revenue = (
-            Revenue.objects.filter(created_at__year=current_year).aggregate(
-                total_revenue=Sum('revenue'), total_gain_price=Sum('gain_price')))
+            Revenue.objects.filter(created_at__year=current_year)
+            .annotate(month_num=ExtractMonth("created_at"))
+            .filter(month_num=current_month)
+            .aggregate(total_revenue=Sum("revenue"), total_gain_price=Sum("gain_price"))
+        )
+    elif time_filter == "year":
+        current_revenue = Revenue.objects.filter(
+            created_at__year=current_year
+        ).aggregate(total_revenue=Sum("revenue"), total_gain_price=Sum("gain_price"))
 
     # Construct the data object
     data_obj = {
-        'current_year': current_year,
-        'current_month': current_month,
-        'current_week': current_week,
-        'start_date': start_date,
-        'end_date': end_date,
-        'total_gain_price': current_revenue['total_gain_price'],
-        'total_revenue': current_revenue['total_revenue']
+        "current_year": current_year,
+        "current_month": current_month,
+        "current_week": current_week,
+        "start_date": start_date,
+        "end_date": end_date,
+        "total_gain_price": current_revenue["total_gain_price"],
+        "total_revenue": current_revenue["total_revenue"],
     }
     return data_obj
 
 
 def _get_this_week_revenue():
-    return get_revenue('week')
+    return get_revenue("week")
 
 
 def _get_this_month_revenue():
-    return get_revenue('month')
+    return get_revenue("month")
 
 
 def _get_this_year_revenue():
-    return get_revenue('year')
+    return get_revenue("year")
 
 
 def send_this_week_results():
     data = _get_this_week_revenue()
     bubble_message: BubbleMessage = {
-        "header":
-            f"{data['current_year']} week {data['current_week']} result",
-        "body": (f"From: {data['start_date']}\n"
-                 f"To: {data['end_date']}\n"
-                 f"1. Gain price: {data['total_gain_price']}\n"
-                 f"2. Revenue: {data['total_revenue']}"),
-        "footer":
+        "header": f"{data['current_year']} week {data['current_week']} result",
+        "body": (
+            f"From: {data['start_date']}\n"
+            f"To: {data['end_date']}\n"
+            f"1. Gain price: {data['total_gain_price']}\n"
+            f"2. Revenue: {data['total_revenue']}"
+        ),
+        "footer": (
             f"{EMOJI_MAP['up_chart']}{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
-            if data['total_revenue'] >= 0 else
-            f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+            if data["total_revenue"] >= 0
+            else f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+        ),
     }
     push_bubble_message(bubble_message)
 
@@ -238,16 +268,18 @@ def send_this_week_results():
 def send_this_month_results():
     data = _get_this_month_revenue()
     bubble_message: BubbleMessage = {
-        "header":
-            f"{data['current_year']}/{data['current_month']} result",
-        "body": (f"From: {data['start_date']}\n"
-                 f"To: {data['end_date']}\n"
-                 f"1. Gain price: {data['total_gain_price']}\n"
-                 f"2. Revenue: {data['total_revenue']}"),
-        "footer":
+        "header": f"{data['current_year']}/{data['current_month']} result",
+        "body": (
+            f"From: {data['start_date']}\n"
+            f"To: {data['end_date']}\n"
+            f"1. Gain price: {data['total_gain_price']}\n"
+            f"2. Revenue: {data['total_revenue']}"
+        ),
+        "footer": (
             f"{EMOJI_MAP['up_chart']}{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
-            if data['total_revenue'] >= 0 else
-            f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+            if data["total_revenue"] >= 0
+            else f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+        ),
     }
     push_bubble_message(bubble_message)
 
@@ -255,16 +287,18 @@ def send_this_month_results():
 def send_this_year_results():
     data = _get_this_year_revenue()
     bubble_message: BubbleMessage = {
-        "header":
-            f"{data['current_year']} result",
-        "body": (f"From: {data['start_date']}\n"
-                 f"To: {data['end_date']}\n"
-                 f"1. Gain price: {data['total_gain_price']}\n"
-                 f"2. Revenue: {data['total_revenue']}"),
-        "footer":
+        "header": f"{data['current_year']} result",
+        "body": (
+            f"From: {data['start_date']}\n"
+            f"To: {data['end_date']}\n"
+            f"1. Gain price: {data['total_gain_price']}\n"
+            f"2. Revenue: {data['total_revenue']}"
+        ),
+        "footer": (
             f"{EMOJI_MAP['up_chart']}{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
-            if data['total_revenue'] >= 0 else
-            f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+            if data["total_revenue"] >= 0
+            else f"{EMOJI_MAP['down_chart']}{EMOJI_MAP['loss']} {random.choice(TRUMP_STYLE_LOSS_COMFORTS)}"
+        ),
     }
     push_bubble_message(bubble_message)
 
@@ -273,25 +307,29 @@ def get_risk_condition():
     data = get_account_margin()
     if data is not None:
         margin_dict = dict(data)
-        initial_margin = margin_dict['initial_margin']
-        equity_amount = margin_dict['equity_amount']
-        available_margin = margin_dict['available_margin']
+        initial_margin = margin_dict["initial_margin"]
+        equity_amount = margin_dict["equity_amount"]
+        available_margin = margin_dict["available_margin"]
         if initial_margin != 0:
             if available_margin <= 0:
                 bubble_message: BubbleMessage = {
                     "header": "!!!Warning!!!",
-                    "body": (f"1. available_margin: {available_margin}\n"
-                             f"2. initial_margin: {initial_margin}\n"
-                             f"3. equity_amount: {equity_amount}"),
-                    "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES)
+                    "body": (
+                        f"1. available_margin: {available_margin}\n"
+                        f"2. initial_margin: {initial_margin}\n"
+                        f"3. equity_amount: {equity_amount}"
+                    ),
+                    "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES),
                 }
                 push_bubble_message(bubble_message)
             if equity_amount / initial_margin < 1.7:
                 bubble_message: BubbleMessage = {
                     "header": "!!!Warning!!!",
-                    "body": (f"1. equity_amount: {equity_amount}\n"
-                             f"2. initial_margin: {initial_margin}\n"
-                             f"3. margin ratio: {round(equity_amount / initial_margin, 2)}"),
-                    "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES)
+                    "body": (
+                        f"1. equity_amount: {equity_amount}\n"
+                        f"2. initial_margin: {initial_margin}\n"
+                        f"3. margin ratio: {round(equity_amount / initial_margin, 2)}"
+                    ),
+                    "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES),
                 }
                 push_bubble_message(bubble_message)

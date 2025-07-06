@@ -1,11 +1,21 @@
 from rest_framework import serializers
-from .models import OptionData, PriceData, Settlement, Signal, Order, Revenue, Backtest, UnfulfilledOp, UnfulfilledFt
+from .models import (
+    OptionData,
+    PriceData,
+    Settlement,
+    Signal,
+    Order,
+    Revenue,
+    Backtest,
+    UnfulfilledOp,
+    UnfulfilledFt,
+)
 
 
 class BaseModelSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
 
 
 class OptionDataSerializer(BaseModelSerializer):

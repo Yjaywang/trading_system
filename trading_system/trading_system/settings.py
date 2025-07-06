@@ -24,17 +24,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-TRADING_SECRET_TOKEN = os.getenv('TRADING_SECRET_TOKEN')
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+TRADING_SECRET_TOKEN = os.getenv("TRADING_SECRET_TOKEN")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('APP_ENV', '').lower() not in ('production', 'dev')
+DEBUG = os.getenv("APP_ENV", "").lower() not in ("production", "dev")
 
-ALLOWED_HOSTS = os.getenv('ALLOW_DOMAIN', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.getenv("ALLOW_DOMAIN", "localhost,127.0.0.1").split(",")
 
 # Application definition
 
-REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -81,13 +81,13 @@ WSGI_APPLICATION = "trading_system.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
@@ -115,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 #  taiwan time
-TIME_ZONE = 'Asia/Taipei'
+TIME_ZONE = "Asia/Taipei"
 
 USE_I18N = True
 
@@ -134,137 +134,149 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:6379/1", # Redis database 1
+        "LOCATION": f"redis://{REDIS_HOST}:6379/1",  # Redis database 1
         "OPTIONS": {
-            "CONNECTION_POOL_KWARGS": {
-                "max_connections": 100
-            },
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100},
         },
         "TIMEOUT": 3600,
-        "KEY_PREFIX": 'trading_system',
+        "KEY_PREFIX": "trading_system",
     }
 }
 
 # Celery settings
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/0"
 CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/0"
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Taipei'                                                               # set taiwan time
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Taipei"  # set taiwan time
 CELERY_BEAT_SCHEDULE = {
-    'op-scraper-task': {
-        'task': 'core.tasks.op_scraper_task',
-        'schedule': crontab(minute='10', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:10
+    "op-scraper-task": {
+        "task": "core.tasks.op_scraper_task",
+        "schedule": crontab(
+            minute="10", hour="14", day_of_week="1-5"
+        ),  # Mon to Fri 14:10
     },
-    'price-scraper-task': {
-        'task': 'core.tasks.price_scraper_task',
-        'schedule': crontab(minute='0', hour='16', day_of_week='1-5'),                      # Mon to Fri 16:00
+    "price-scraper-task": {
+        "task": "core.tasks.price_scraper_task",
+        "schedule": crontab(
+            minute="0", hour="16", day_of_week="1-5"
+        ),  # Mon to Fri 16:00
     },
-    'unfulfilled-op-scraper-task': {
-        'task': 'core.tasks.unfulfilled_op_scraper_task',
-        'schedule': crontab(minute='30', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:30
+    "unfulfilled-op-scraper-task": {
+        "task": "core.tasks.unfulfilled_op_scraper_task",
+        "schedule": crontab(
+            minute="30", hour="15", day_of_week="1-5"
+        ),  # Mon to Fri 15:30
     },
-    'unfulfilled-future-scraper-task': {
-        'task': 'core.tasks.unfulfilled_future_scraper_task',
-        'schedule': crontab(minute='40', hour='15', day_of_week='1-5'),                     # Mon to Fri 15:40
+    "unfulfilled-future-scraper-task": {
+        "task": "core.tasks.unfulfilled_future_scraper_task",
+        "schedule": crontab(
+            minute="40", hour="15", day_of_week="1-5"
+        ),  # Mon to Fri 15:40
     },
-    'analyze-signal-task': {
-        'task': 'core.tasks.analyzer_task',
-        'schedule': crontab(minute='20', hour='14', day_of_week='1-5'),                     # Mon to Fri 14:20
+    "analyze-signal-task": {
+        "task": "core.tasks.analyzer_task",
+        "schedule": crontab(
+            minute="20", hour="14", day_of_week="1-5"
+        ),  # Mon to Fri 14:20
     },
-    'daily-notification-task': {
-        'task': 'core.tasks.daily_notification_task',
-        'schedule': crontab(minute='00', hour='17', day_of_week='1-5'),                     # Mon to Fri 17:00
+    "daily-notification-task": {
+        "task": "core.tasks.daily_notification_task",
+        "schedule": crontab(
+            minute="00", hour="17", day_of_week="1-5"
+        ),  # Mon to Fri 17:00
     },
-    'weekly-notify-revenue-task': {
-        'task': 'core.tasks.notify_this_week_revenue_task',
-        'schedule': crontab(minute='0', hour='17', day_of_week='5'),                        # Fri 17:00
+    "weekly-notify-revenue-task": {
+        "task": "core.tasks.notify_this_week_revenue_task",
+        "schedule": crontab(minute="0", hour="17", day_of_week="5"),  # Fri 17:00
     },
-    'monthly-notify-revenue-task': {
-        'task': 'core.tasks.check_and_notify_month_end',
-        'schedule': crontab(minute='10', hour='17'),                                        # 17:10
+    "monthly-notify-revenue-task": {
+        "task": "core.tasks.check_and_notify_month_end",
+        "schedule": crontab(minute="10", hour="17"),  # 17:10
     },
-    'yearly-notify-revenue-task': {
-        'task': 'core.tasks.notify_this_year_revenue_task',
-        'schedule': crontab(minute='20', hour='17', day_of_month='31', month_of_year='12'), # Year end 17:20
+    "yearly-notify-revenue-task": {
+        "task": "core.tasks.notify_this_year_revenue_task",
+        "schedule": crontab(
+            minute="20", hour="17", day_of_month="31", month_of_year="12"
+        ),  # Year end 17:20
     },
-    'open-order-task': {
-        'task': 'core.tasks.open_position_task',
-        'schedule': crontab(minute='1', hour='15', day_of_week='1-5'),
+    "open-order-task": {
+        "task": "core.tasks.open_position_task",
+        "schedule": crontab(minute="1", hour="15", day_of_week="1-5"),
     },
-    'close-order-task': {
-        'task': 'core.tasks.close_position_task',
-        'schedule': crontab(minute='44', hour='13', day_of_week='1-5'),
+    "close-order-task": {
+        "task": "core.tasks.close_position_task",
+        "schedule": crontab(minute="44", hour="13", day_of_week="1-5"),
     },
-                                                                                              # 'check-risk-task': {
-                                                                                              #     'task': 'core.tasks.check_risk_task',
-                                                                                              #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
-                                                                                              # },
+    # 'check-risk-task': {
+    #     'task': 'core.tasks.check_risk_task',
+    #     'schedule': crontab(minute='15', hour='*'),                                         # every hour:15
+    # },
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
         },
     },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': '/logs/app/core_info.log',
-            'formatter': 'verbose',
-        },
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler',
-        },
-        'celery_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': '/logs/app/celery_info.log',
-            'formatter': 'simple',
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
         },
     },
-    'loggers': {
-                                                                    # 'django': {
-                                                                    #     'handlers': ['console', 'file', 'mail_admins'],
-                                                                    #     'level': 'DEBUG' if DEBUG else 'INFO',
-                                                                    #     'propagate': True,
-                                                                    # },
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': False,
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        'core': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': True,
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "/logs/app/core_info.log",
+            "formatter": "verbose",
         },
-        'celery': {
-            'handlers': ['console', 'celery_file'],
-            'level': 'INFO',
-            'propagate': True,
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+        },
+        "celery_file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "/logs/app/celery_info.log",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        # 'django': {
+        #     'handlers': ['console', 'file', 'mail_admins'],
+        #     'level': 'DEBUG' if DEBUG else 'INFO',
+        #     'propagate': True,
+        # },
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "core": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": True,
+        },
+        "celery": {
+            "handlers": ["console", "celery_file"],
+            "level": "INFO",
+            "propagate": True,
         },
     },
 }

@@ -1,8 +1,8 @@
 import logging
 from functools import wraps
 
-celery_logger = logging.getLogger('celery')
-core_logger = logging.getLogger('core')
+celery_logger = logging.getLogger("celery")
+core_logger = logging.getLogger("core")
 
 
 def celery_log_task_status(func):
