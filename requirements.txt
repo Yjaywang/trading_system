@@ -8,7 +8,7 @@ Django==5.0.6
 redis==6.2.0
 flower==2.0.1
 python-dotenv==1.0.1
-yapf==0.40.2
+black==25.1.0
 flake8==7.0.0
 isort==5.13.2
 psycopg2-binary==2.9.9

@@ -20,7 +20,7 @@ WORKDIR /trading_system
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends supervisor && \
+    apt-get install -y --no-install-recommends supervisor git && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/venv /opt/venv

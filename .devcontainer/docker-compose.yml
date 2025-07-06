@@ -1,26 +1,30 @@
-version: '3'
+# docker-compose.override
+version: '3.8'
 services:
   # Update this to the name of the service you want to work with in your docker-compose.yml file
   app:
-    # Uncomment if you want to override the service's Dockerfile to one in the .devcontainer 
-    # folder. Note that the path of the Dockerfile and context is relative to the *primary* 
-    # docker-compose.yml file (the first in the devcontainer.json "dockerComposeFile"
-    # array). The sample below assumes your primary file is in the root of your project.
-    #
-    # build:
-    #   context: .
-    #   dockerfile: .devcontainer/Dockerfile
-
+    deploy:
+      resources:
+        limits:
+          cpus: '5.0'
+          memory: '4G'
+        reservations:
+          cpus: '4.0'
+          memory: '2G'
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
       - ..:/workspaces:cached
 
-    # Uncomment the next four lines if you will use a ptrace-based debugger like C++, Go, and Rust.
-    # cap_add:
-    #   - SYS_PTRACE
-    # security_opt:
-    #   - seccomp:unconfined
+    environment:
+      - PYTHONUNBUFFERED=1  # let python output display directly in the console for easier debugging
 
-    # Overrides default command so things don't shut down after the process ends.
+    # Permanently pause it
+    # Note: Dockerfile uses supervisord to start the server by default.
+    # In development, use this start it manually.
     command: sleep infinity
- 
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  nginx:
