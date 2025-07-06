@@ -27,6 +27,8 @@ COPY --from=builder /opt/venv /opt/venv
 
 COPY . .
 
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 8000

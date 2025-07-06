@@ -1,0 +1,32 @@
+
+{
+    "name": "Trading System Dev",
+    "dockerComposeFile": [
+        "../docker-compose.yml",
+        "../docker-compose.override.yml"
+    ],
+    "service": "app",
+    "workspaceFolder": "/trading_system",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-azuretools.vscode-docker",
+                "ms-python.flake8",
+                "KevinRose.vsc-python-indent",
+                "eamodio.gitlens",
+                "humao.rest-client"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/opt/venv/bin/python",
+                "python.analysis.autoImportCompletions": true,
+                "editor.formatOnSave": true,
+                "python.formatting.provider": "black",
+                "python.linting.flake8Enabled": true,
+                "python.linting.pylintEnabled": false
+            }
+        }
+    },
+    "forwardPorts": [8000, 5555]
+}
