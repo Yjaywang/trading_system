@@ -5,6 +5,7 @@ from ..utils.constants import LINE_BUBBLE_MESSAGE_TEMPLATE
 from ..types import BubbleMessage
 from distutils.util import strtobool
 from ..middleware.error_decorators import core_logger
+import json
 
 load_dotenv()
 
@@ -48,8 +49,16 @@ def push_bubble_message(message: BubbleMessage):
         "Content-Type": "application/json",
         "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN')}",
     }
-    data = {"to": os.getenv("LINE_USER_ID"), "messages": [bubble_message]}
-    print(data)
+    data = {
+        "to": os.getenv("LINE_USER_ID"),
+        "messages": [
+            {
+                "type": "flex",
+                "altText": message.get("header", "default alt text"),
+                "contents": bubble_message,
+            }
+        ],
+    }
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()  # 4xx 5xx error
