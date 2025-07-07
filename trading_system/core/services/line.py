@@ -49,7 +49,7 @@ def push_bubble_message(message: BubbleMessage):
         "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN')}",
     }
     data = {"to": os.getenv("LINE_USER_ID"), "messages": [bubble_message]}
-
+    print(data)
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()  # 4xx 5xx error
