@@ -1,9 +1,9 @@
-from typing import TypedDict
+from typing import TypedDict, List, Union
 
 
 class BubbleMessage(TypedDict, total=False):
     header: str
-    body: str
+    body: List[Union[str, int]]
     footer: str
 
 

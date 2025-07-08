@@ -1,7 +1,10 @@
 import requests
 import os
 from dotenv import load_dotenv
-from ..utils.constants import LINE_BUBBLE_MESSAGE_TEMPLATE
+from ..utils.constants import (
+    LINE_BUBBLE_MESSAGE_TEMPLATE,
+    LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE,
+)
 from ..types import BubbleMessage
 from distutils.util import strtobool
 from ..middleware.error_decorators import core_logger
@@ -38,6 +41,10 @@ def push_bubble_message(message: BubbleMessage):
         return
     bubble_message = LINE_BUBBLE_MESSAGE_TEMPLATE.copy()
     bubble_message["header"]["contents"][0]["text"] = message.get("header", "")
+    for content in message.get("body", []):
+        body_content = LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE.copy()
+        body_content["text"] = content
+        bubble_message["body"]["contents"].append(body_content)
     bubble_message["body"]["contents"][0]["text"] = message.get("body", "")
     if "footer" not in message:
         del bubble_message["footer"]

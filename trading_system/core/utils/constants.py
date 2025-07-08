@@ -55,7 +55,7 @@ LINE_BUBBLE_MESSAGE_TEMPLATE = {
     "body": {
         "type": "box",
         "layout": "vertical",
-        "contents": [{"type": "text", "text": "default body message"}],
+        "contents": [],
     },
     "footer": {
         "type": "box",
@@ -69,4 +69,8 @@ LINE_BUBBLE_MESSAGE_TEMPLATE = {
             }
         ],
     },
+}
+LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE = {
+    "type": "text",
+    "text": "default body message",
 }

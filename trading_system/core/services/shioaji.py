@@ -222,13 +222,13 @@ def _process_deal(trade, contract_category, action):
         avg_deal_price = total_deal_price / total_deal_quantity
         bubble_message: BubbleMessage = {
             "header": f" Deal start",
-            "body": (
-                f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                f"2. Product: {contract_category}\n"
-                f"3. Action: {action}\n"
-                f"4. Avg Price: {avg_deal_price}\n"
-                f"5. Quantity: {total_deal_quantity}"
-            ),
+            "body": [
+                f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                f"2. Product: {contract_category}",
+                f"3. Action: {action}",
+                f"4. Avg Price: {avg_deal_price}",
+                f"5. Quantity: {total_deal_quantity}",
+            ],
             "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}",
         }
         push_bubble_message(bubble_message)
@@ -252,13 +252,13 @@ def _settlement_deal(positions, contract_category, action):
         cost_price = data["price"]
         bubble_message: BubbleMessage = {
             "header": f" Deal end",
-            "body": (
-                f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                f"2. Product: {contract_category}\n"
-                f"3. Action: {action}\n"
-                f"4. Avg Price: {avg_deal_price}\n"
-                f"5. Quantity: {total_deal_quantity}"
-            ),
+            "body": [
+                f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                f"2. Product: {contract_category}",
+                f"3. Action: {action}",
+                f"4. Avg Price: {avg_deal_price}",
+                f"5. Quantity: {total_deal_quantity}",
+            ],
             "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}",
         }
         push_bubble_message(bubble_message)

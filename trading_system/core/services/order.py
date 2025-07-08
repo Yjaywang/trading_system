@@ -114,16 +114,16 @@ def close_orders():
             if revenue_data is not None:
                 bubble_message: BubbleMessage = {
                     "header": "Today's revenue",
-                    "body": (
-                        f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                        f"2. product: {contract_code}\n"
-                        f"3. quantity: {revenue_data['quantity']}\n"
-                        f"4. direction: {revenue_data['direction']}\n"
-                        f"5. open_price: {revenue_data['open_price']}\n"
-                        f"6. close_price: {revenue_data['close_price']}\n"
-                        f"7. gain_price: {revenue_data['gain_price']}\n"
-                        f"8. revenue: {revenue_data['revenue']}"
-                    ),
+                    "body": [
+                        f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                        f"2. product: {contract_code}",
+                        f"3. quantity: {revenue_data['quantity']}",
+                        f"4. direction: {revenue_data['direction']}",
+                        f"5. open_price: {revenue_data['open_price']}",
+                        f"6. close_price: {revenue_data['close_price']}",
+                        f"7. gain_price: {revenue_data['gain_price']}",
+                        f"8. revenue: {revenue_data['revenue']}",
+                    ],
                     "footer": (
                         f"{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
                         if revenue_data["revenue"] > 0
@@ -183,16 +183,16 @@ def close_some_orders(quantity):
             if revenue_data is not None:
                 bubble_message: BubbleMessage = {
                     "header": "Today's revenue",
-                    "body": (
-                        f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}\n"
-                        f"2. product: {contract_code}\n"
-                        f"3. quantity: {revenue_data['quantity']}\n"
-                        f"4. direction: {revenue_data['direction']}\n"
-                        f"5. open_price: {revenue_data['open_price']}\n"
-                        f"6. close_price: {revenue_data['close_price']}\n"
-                        f"7. gain_price: {revenue_data['gain_price']}\n"
-                        f"8. revenue: {revenue_data['revenue']}"
-                    ),
+                    "body": [
+                        f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                        f"2. product: {contract_code}",
+                        f"3. quantity: {revenue_data['quantity']}",
+                        f"4. direction: {revenue_data['direction']}",
+                        f"5. open_price: {revenue_data['open_price']}",
+                        f"6. close_price: {revenue_data['close_price']}",
+                        f"7. gain_price: {revenue_data['gain_price']}",
+                        f"8. revenue: {revenue_data['revenue']}",
+                    ],
                     "footer": (
                         f"{EMOJI_MAP['profit']} {random.choice(TRUMP_STYLE_TRADING_CONGRATS)}"
                         if revenue_data["revenue"] > 0
