@@ -45,7 +45,6 @@ def push_bubble_message(message: BubbleMessage):
         body_content = LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE.copy()
         body_content["text"] = content
         bubble_message["body"]["contents"].append(body_content)
-    bubble_message["body"]["contents"][0]["text"] = message.get("body", "")
     if "footer" not in message:
         del bubble_message["footer"]
     else:
