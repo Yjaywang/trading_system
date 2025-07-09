@@ -146,7 +146,7 @@ def daily_notification_task():
     if daily_cron_status:
         messages = []
         for key, value in daily_cron_status.items():
-            messages.append(f"{key}: {value}")
+            messages.append(f"{value}: {key}")
         joined_messages = "\n".join(messages)
         formatted_date = date.today().strftime(DATE_FORMAT_2)
         push_message(f"{formatted_date}\n{joined_messages}")
