@@ -24,8 +24,7 @@ from .middleware.error_decorators import celery_log_task_status
 default_daily_cron_status = {
     "op_scraper_task": EMOJI_MAP["failure"],
     "price_scraper_task": EMOJI_MAP["failure"],
-    "unfulfilled_op_scraper_task": EMOJI_MAP["failure"],
-    "unfulfilled_future_scraper_task": EMOJI_MAP["failure"],
+    "unfulfilled_data_summary_task": EMOJI_MAP["failure"],
     "analyzer_task": EMOJI_MAP["failure"],
     "open_position_task": EMOJI_MAP["failure"],
     "close_position_task": EMOJI_MAP["failure"],
@@ -56,23 +55,14 @@ def price_scraper_task():
 
 @shared_task(max_retries=0)
 @celery_log_task_status
-def unfulfilled_op_scraper_task():
+def unfulfilled_data_summary_task():
     run_unfulfilled_op_scraper()
-    daily_cron_status = cache.get(DAILY_CRON_STATUS)
-    if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
-    daily_cron_status["unfulfilled_op_scraper_task"] = EMOJI_MAP["success"]
-    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
-
-
-@shared_task(max_retries=0)
-@celery_log_task_status
-def unfulfilled_future_scraper_task():
     run_unfulfilled_future_scraper()
+    get_unfulfilled_data()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
         daily_cron_status = default_daily_cron_status.copy()
-    daily_cron_status["unfulfilled_future_scraper_task"] = EMOJI_MAP["success"]
+    daily_cron_status["unfulfilled_data_summary_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
@@ -138,12 +128,6 @@ def notify_this_year_revenue_task():
 @celery_log_task_status
 def check_risk_task():
     get_risk_condition()
-
-
-@shared_task(max_retries=0)
-@celery_log_task_status
-def generate_unfulfilled_data():
-    get_unfulfilled_data()
 
 
 @shared_task(max_retries=0)

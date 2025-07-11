@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, time as date
 from .line import push_bubble_message
 from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
 from ..utils.trump_words import (
+    TRUMP_STYLE_ANALYSIS_JOKES,
     TRUMP_STYLE_TRADING_CONGRATS,
     TRUMP_STYLE_LOSS_COMFORTS,
     TRUMP_STYLE_MARGIN_CALL_JOKES,
@@ -145,7 +146,7 @@ def run_analysis():
                     bubble_message: BubbleMessage = {
                         "header": f"Today's analysis for you",
                         "body": [
-                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                            f"1. {datetime.now().strftime('%Y/%m/%d')}",
                             f"2. ref_date:{signal_data_obj['ref_date']}",
                             f"3. trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}",
                             f"4. tw_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['tw_trading_signal']]}",
@@ -165,6 +166,9 @@ def run_analysis():
                             f"put_count/amount:",
                             f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}\n",
                             f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}",
+                            f"---",
+                            f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
+                            f"---",
                         ],
                         "footer": f"Suggest to do: {TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}",
                     }
@@ -362,7 +366,8 @@ def _get_unfulfilled_ft_data(today: date, trader_list: list):
 
 
 def _get_unfulfilled_op_data(today: date, trader_list: list):
-    op_data = UnfulfilledOp.objects.filter(created_at__date=today)
+    op_data = UnfulfilledOp.objects.filter(date=today)
+    print(today, op_data)
     op_analysis_list = ["call", "put"]
     direction_list = ["buy", "sell"]
     # Example: {"buy": {"call": {"fi": 0, "dt": 0}, "put": {"fi": 0, "dt": 0}}, ...}
@@ -420,36 +425,37 @@ def get_unfulfilled_data():
                 for op_type in today_op_results[op_direction]
             }
     bubble_message: BubbleMessage = {
-        "header": "Unfulfilled data",
+        "header": "Unfulfilled data summary",
         "body": [
-            f"{datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+            f"{datetime.now().strftime('%Y/%m/%d')}",
+            f"---",
             f"Future unfulfilled data",
-            f"1. TX"
-            f"fr: {today_ft_results['TX']['fi']} ({delta_ft_results['TX']['fi']})",
-            f"dt: {today_ft_results['TX']['dt']} ({delta_ft_results['TX']['dt']})",
-            f"2. MTX"
-            f"fr: {today_ft_results['MTX']['fi']} ({delta_ft_results['MTX']['fi']})",
-            f"dt: {today_ft_results['MTX']['dt']} ({delta_ft_results['MTX']['dt']})",
-            f"3. SF"
-            f"fr: {today_ft_results['SF']['fi']} ({delta_ft_results['SF']['fi']})",
-            f"dt: {today_ft_results['SF']['dt']} ({delta_ft_results['SF']['dt']})",
-            f"4. subtotal"
-            f"fr: {today_ft_results['subtotal']['fi']} ({delta_ft_results['subtotal']['fi']})",
-            f"dt: {today_ft_results['subtotal']['dt']} ({delta_ft_results['subtotal']['dt']})",
-            f"",
+            f"1. TX",
+            f"fr: {EMOJI_MAP['up_chart'] if delta_ft_results['TX']['fi']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['TX']['fi']} ({delta_ft_results['TX']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_ft_results['TX']['dt']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['TX']['dt']} ({delta_ft_results['TX']['dt']})",
+            f"2. MTX",
+            f"fr: {EMOJI_MAP['up_chart'] if delta_ft_results['MTX']['fi']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['MTX']['fi']} ({delta_ft_results['MTX']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_ft_results['MTX']['dt']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['MTX']['dt']} ({delta_ft_results['MTX']['dt']})",
+            f"3. SF",
+            f"fr: {EMOJI_MAP['up_chart'] if delta_ft_results['SF']['fi']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['SF']['fi']} ({delta_ft_results['SF']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_ft_results['SF']['dt']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['SF']['dt']} ({delta_ft_results['SF']['dt']})",
+            f"4. subtotal",
+            f"fr: {EMOJI_MAP['up_chart'] if delta_ft_results['subtotal']['fi']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['subtotal']['fi']} ({delta_ft_results['subtotal']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_ft_results['subtotal']['dt']>=0 else EMOJI_MAP['down_chart']} {today_ft_results['subtotal']['dt']} ({delta_ft_results['subtotal']['dt']})",
+            f"---",
             f"Option unfulfilled data",
             f"1. buy call",
-            f"fi: {today_op_results['buy']['call']['fi']} ({delta_op_results['buy']['call']['fi']})",
-            f"dt: {today_op_results['buy']['call']['dt']} ({delta_op_results['buy']['call']['dt']})",
+            f"fi: {EMOJI_MAP['up_chart'] if delta_op_results['buy']['call']['fi']>=0 else EMOJI_MAP['down_chart']} {today_op_results['buy']['call']['fi']} ({delta_op_results['buy']['call']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_op_results['buy']['call']['dt']>=0 else EMOJI_MAP['down_chart']} {today_op_results['buy']['call']['dt']} ({delta_op_results['buy']['call']['dt']})",
             f"2. sell put",
-            f"fi: {today_op_results['sell']['put']['fi']} ({delta_op_results['sell']['put']['fi']})",
-            f"dt: {today_op_results['sell']['put']['dt']} ({delta_op_results['sell']['put']['dt']})",
+            f"fi: {EMOJI_MAP['up_chart'] if delta_op_results['sell']['put']['fi']>=0 else EMOJI_MAP['down_chart']} {today_op_results['sell']['put']['fi']} ({delta_op_results['sell']['put']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_op_results['sell']['put']['dt']>=0 else EMOJI_MAP['down_chart']} {today_op_results['sell']['put']['dt']} ({delta_op_results['sell']['put']['dt']})",
             f"3. buy put",
-            f"fi: {today_op_results['buy']['put']['fi']} ({delta_op_results['buy']['put']['fi']})",
-            f"dt: {today_op_results['buy']['put']['dt']} ({delta_op_results['buy']['put']['dt']})",
+            f"fi: {EMOJI_MAP['up_chart'] if delta_op_results['buy']['put']['fi']>=0 else EMOJI_MAP['down_chart']} {today_op_results['buy']['put']['fi']} ({delta_op_results['buy']['put']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_op_results['buy']['put']['dt']>=0 else EMOJI_MAP['down_chart']} {today_op_results['buy']['put']['dt']} ({delta_op_results['buy']['put']['dt']})",
             f"4. sell call",
-            f"fi: {today_op_results['sell']['call']['fi']} ({delta_op_results['sell']['call']['fi']})",
-            f"dt: {today_op_results['sell']['call']['dt']} ({delta_op_results['sell']['call']['dt']})",
+            f"fi: {EMOJI_MAP['up_chart'] if delta_op_results['sell']['call']['fi']>=0 else EMOJI_MAP['down_chart']} {today_op_results['sell']['call']['fi']} ({delta_op_results['sell']['call']['fi']})",
+            f"dt: {EMOJI_MAP['up_chart'] if delta_op_results['sell']['call']['dt']>=0 else EMOJI_MAP['down_chart']} {today_op_results['sell']['call']['dt']} ({delta_op_results['sell']['call']['dt']})",
             f"5. buy side",
             f"fi: {EMOJI_MAP['bull'] if today_op_results['buy']['call']['fi'] >= today_op_results['buy']['put']['fi'] else EMOJI_MAP['bear']}",
             f"dt: {EMOJI_MAP['bull'] if today_op_results['buy']['call']['dt'] >= today_op_results['buy']['put']['dt'] else EMOJI_MAP['bear']}",
@@ -457,6 +463,6 @@ def get_unfulfilled_data():
             f"fi: {EMOJI_MAP['bull'] if today_op_results['sell']['call']['fi'] < today_op_results['sell']['put']['fi'] else EMOJI_MAP['bear']}",
             f"dt: {EMOJI_MAP['bull'] if today_op_results['sell']['call']['dt'] < today_op_results['sell']['put']['dt'] else EMOJI_MAP['bear']}",
         ],
-        "footer": "Please check the unfulfilled data.",
+        "footer": f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
     }
     push_bubble_message(bubble_message)

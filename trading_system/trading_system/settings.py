@@ -163,23 +163,11 @@ CELERY_BEAT_SCHEDULE = {
             minute="0", hour="16", day_of_week="1-5"
         ),  # Mon to Fri 16:00
     },
-    "unfulfilled-op-scraper-task": {
-        "task": "core.tasks.unfulfilled_op_scraper_task",
+    "unfulfilled-data-summary-report-task": {
+        "task": "core.tasks.unfulfilled_data_summary_task",
         "schedule": crontab(
             minute="30", hour="15", day_of_week="1-5"
         ),  # Mon to Fri 15:30
-    },
-    "unfulfilled-future-scraper-task": {
-        "task": "core.tasks.unfulfilled_future_scraper_task",
-        "schedule": crontab(
-            minute="40", hour="15", day_of_week="1-5"
-        ),  # Mon to Fri 15:40
-    },
-    "analyze-unfulfilled-data-task": {
-        "task": "core.tasks.generate_unfulfilled_data",
-        "schedule": crontab(
-            minute="45", hour="15", day_of_week="1-5"
-        ),  # Mon to Fri 15:45
     },
     "analyze-signal-task": {
         "task": "core.tasks.analyzer_task",

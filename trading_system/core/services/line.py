@@ -49,7 +49,6 @@ def push_bubble_message(message: BubbleMessage):
         del bubble_message["footer"]
     else:
         bubble_message["footer"]["contents"][0]["text"] = message.get("footer", "")
-
     url = f"{os.getenv('LINE_PUSH_MESSAGE_URL')}"
     headers = {
         "Content-Type": "application/json",

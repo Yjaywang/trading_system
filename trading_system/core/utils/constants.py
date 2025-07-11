@@ -49,6 +49,7 @@ LINE_BUBBLE_MESSAGE_TEMPLATE = {
                 "weight": "bold",
                 "style": "italic",
                 "align": "center",
+                "wrap": True,
             }
         ],
     },
@@ -63,9 +64,9 @@ LINE_BUBBLE_MESSAGE_TEMPLATE = {
         "contents": [
             {
                 "type": "text",
-                "align": "center",
                 "text": "default footer message",
                 "weight": "bold",
+                "wrap": True,
             }
         ],
     },
@@ -73,4 +74,5 @@ LINE_BUBBLE_MESSAGE_TEMPLATE = {
 LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE = {
     "type": "text",
     "text": "default body message",
+    "wrap": True,
 }
