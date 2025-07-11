@@ -11,8 +11,15 @@ from .services.scraper import (
     insert_init_price,
     insert_init_unfulfilled_op,
     insert_init_unfulfilled_ft,
+    run_unfulfilled_future_scraper,
+    run_unfulfilled_op_scraper,
 )
-from .services.analyzer import run_analysis, get_revenue, get_risk_condition
+from .services.analyzer import (
+    run_analysis,
+    get_revenue,
+    get_risk_condition,
+    get_unfulfilled_data,
+)
 from .services.order import (
     open_orders,
     close_orders,
@@ -31,9 +38,9 @@ def view_dtl(request):
 
 
 @api_view(["POST"])
-@require_secret_token
+# @require_secret_token
 def test(request):
-    insert_init_unfulfilled_ft()
+    run_unfulfilled_op_scraper()
     return Response("")
 
 

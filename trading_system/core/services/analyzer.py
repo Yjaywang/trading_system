@@ -1,12 +1,18 @@
-from ..models import OptionData, Signal, Revenue
-from ..serializers import OptionDataSerializer, SignalSerializer, RevenueSerializer
+from ..models import OptionData, Signal, Revenue, UnfulfilledFt, UnfulfilledOp
+from ..serializers import (
+    OptionDataSerializer,
+    SignalSerializer,
+    RevenueSerializer,
+    UnfulfilledFtSerializer,
+    UnfulfilledOpSerializer,
+)
 from ..utils.trading_signal import (
     trading_signal_v4,
     reverse_signal_v1,
     settlement_signal_v1,
     calculate_final_signal,
 )
-from datetime import datetime, timedelta, time as dt_time, date
+from datetime import datetime, timedelta, time as date
 from .line import push_bubble_message
 from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
 from ..utils.trump_words import (
@@ -333,3 +339,124 @@ def get_risk_condition():
                     "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES),
                 }
                 push_bubble_message(bubble_message)
+
+
+def _get_unfulfilled_ft_data(today: date, trader_list: list):
+    future_data = UnfulfilledFt.objects.filter(date=today)
+    ft_analysis_list = ["TX", "MTX", "SF", "subtotal"]
+    # Example: {"TX": {"fi": 0, "dt": 0}, ...}
+    ft_results = {
+        ft_name: {trader: 0 for trader in trader_list} for ft_name in ft_analysis_list
+    }
+    for future in future_data:
+        ft_data = UnfulfilledFtSerializer(future).data
+        if (
+            ft_data["trader"] in trader_list
+            and ft_data["future_name"] in ft_analysis_list
+        ):
+            ft_results[ft_data["future_name"]][ft_data["trader"]] = ft_data[
+                "unfulfilled_count"
+            ]
+
+    return ft_results
+
+
+def _get_unfulfilled_op_data(today: date, trader_list: list):
+    op_data = UnfulfilledOp.objects.filter(created_at__date=today)
+    op_analysis_list = ["call", "put"]
+    direction_list = ["buy", "sell"]
+    # Example: {"buy": {"call": {"fi": 0, "dt": 0}, "put": {"fi": 0, "dt": 0}}, ...}
+    op_results = {
+        direction: {
+            op_type: {trade: 0 for trade in trader_list} for op_type in op_analysis_list
+        }
+        for direction in direction_list
+    }
+    for op in op_data:
+        op_data = UnfulfilledOpSerializer(op).data
+        if op_data["trader"] in trader_list and op_data["op_type"] in op_analysis_list:
+            op_results[op_data["direction"]][op_data["op_type"]][op_data["trader"]] = (
+                op_data["unfulfilled_count"]
+            )
+    return op_results
+
+
+def get_unfulfilled_data():
+    today = datetime.now().date()
+    analysis_trader_list = ["fi", "dt"]
+    # desc no duplicate dates
+    distinct_dates = (
+        UnfulfilledFt.objects.order_by("-date")
+        .values_list("date", flat=True)
+        .distinct()
+    )
+    previous_date = distinct_dates[1]
+    today_ft_results = _get_unfulfilled_ft_data(today, analysis_trader_list)
+    previous_ft_results = _get_unfulfilled_ft_data(previous_date, analysis_trader_list)
+    today_op_results = _get_unfulfilled_op_data(today, analysis_trader_list)
+    previous_op_results = _get_unfulfilled_op_data(previous_date, analysis_trader_list)
+    delta_ft_results = {}
+    delta_op_results = {}
+    if (
+        today_ft_results
+        and previous_ft_results
+        and today_op_results
+        and previous_op_results
+    ):
+
+        for ft_name in today_ft_results:
+            delta_ft_results[ft_name] = {
+                trader: today_ft_results[ft_name][trader]
+                - previous_ft_results[ft_name][trader]
+                for trader in analysis_trader_list
+            }
+        for op_direction in today_op_results:
+            delta_op_results[op_direction] = {
+                op_type: {
+                    trader: today_op_results[op_direction][op_type][trader]
+                    - previous_op_results[op_direction][op_type][trader]
+                    for trader in analysis_trader_list
+                }
+                for op_type in today_op_results[op_direction]
+            }
+    bubble_message: BubbleMessage = {
+        "header": "Unfulfilled data",
+        "body": [
+            f"{datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+            f"Future unfulfilled data",
+            f"1. TX"
+            f"fr: {today_ft_results['TX']['fi']} ({delta_ft_results['TX']['fi']})",
+            f"dt: {today_ft_results['TX']['dt']} ({delta_ft_results['TX']['dt']})",
+            f"2. MTX"
+            f"fr: {today_ft_results['MTX']['fi']} ({delta_ft_results['MTX']['fi']})",
+            f"dt: {today_ft_results['MTX']['dt']} ({delta_ft_results['MTX']['dt']})",
+            f"3. SF"
+            f"fr: {today_ft_results['SF']['fi']} ({delta_ft_results['SF']['fi']})",
+            f"dt: {today_ft_results['SF']['dt']} ({delta_ft_results['SF']['dt']})",
+            f"4. subtotal"
+            f"fr: {today_ft_results['subtotal']['fi']} ({delta_ft_results['subtotal']['fi']})",
+            f"dt: {today_ft_results['subtotal']['dt']} ({delta_ft_results['subtotal']['dt']})",
+            f"",
+            f"Option unfulfilled data",
+            f"1. buy call",
+            f"fi: {today_op_results['buy']['call']['fi']} ({delta_op_results['buy']['call']['fi']})",
+            f"dt: {today_op_results['buy']['call']['dt']} ({delta_op_results['buy']['call']['dt']})",
+            f"2. sell put",
+            f"fi: {today_op_results['sell']['put']['fi']} ({delta_op_results['sell']['put']['fi']})",
+            f"dt: {today_op_results['sell']['put']['dt']} ({delta_op_results['sell']['put']['dt']})",
+            f"3. buy put",
+            f"fi: {today_op_results['buy']['put']['fi']} ({delta_op_results['buy']['put']['fi']})",
+            f"dt: {today_op_results['buy']['put']['dt']} ({delta_op_results['buy']['put']['dt']})",
+            f"4. sell call",
+            f"fi: {today_op_results['sell']['call']['fi']} ({delta_op_results['sell']['call']['fi']})",
+            f"dt: {today_op_results['sell']['call']['dt']} ({delta_op_results['sell']['call']['dt']})",
+            f"5. buy side",
+            f"fi: {EMOJI_MAP['bull'] if today_op_results['buy']['call']['fi'] >= today_op_results['buy']['put']['fi'] else EMOJI_MAP['bear']}",
+            f"dt: {EMOJI_MAP['bull'] if today_op_results['buy']['call']['dt'] >= today_op_results['buy']['put']['dt'] else EMOJI_MAP['bear']}",
+            f"6. sell side",
+            f"fi: {EMOJI_MAP['bull'] if today_op_results['sell']['call']['fi'] < today_op_results['sell']['put']['fi'] else EMOJI_MAP['bear']}",
+            f"dt: {EMOJI_MAP['bull'] if today_op_results['sell']['call']['dt'] < today_op_results['sell']['put']['dt'] else EMOJI_MAP['bear']}",
+        ],
+        "footer": "Please check the unfulfilled data.",
+    }
+    push_bubble_message(bubble_message)

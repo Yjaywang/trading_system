@@ -12,6 +12,7 @@ from .services.analyzer import (
     send_this_month_results,
     send_this_year_results,
     get_risk_condition,
+    get_unfulfilled_data,
 )
 from .services.order import open_orders, close_orders
 from .services.line import push_message
@@ -137,6 +138,12 @@ def notify_this_year_revenue_task():
 @celery_log_task_status
 def check_risk_task():
     get_risk_condition()
+
+
+@shared_task(max_retries=0)
+@celery_log_task_status
+def generate_unfulfilled_data():
+    get_unfulfilled_data()
 
 
 @shared_task(max_retries=0)

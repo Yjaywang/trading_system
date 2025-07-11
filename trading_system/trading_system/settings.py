@@ -175,6 +175,12 @@ CELERY_BEAT_SCHEDULE = {
             minute="40", hour="15", day_of_week="1-5"
         ),  # Mon to Fri 15:40
     },
+    "analyze-unfulfilled-data-task": {
+        "task": "core.tasks.generate_unfulfilled_data",
+        "schedule": crontab(
+            minute="45", hour="15", day_of_week="1-5"
+        ),  # Mon to Fri 15:45
+    },
     "analyze-signal-task": {
         "task": "core.tasks.analyzer_task",
         "schedule": crontab(
