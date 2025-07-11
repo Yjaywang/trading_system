@@ -270,10 +270,10 @@ def run_unfulfilled_op_scraper():
                     "tw_trade_unfulfilled_buy_call_amount": int(
                         op_raw_data[0][11].replace(",", "")
                     ),
-                    "tw_trade_unfulfilled_buy_put_count": int(
+                    "tw_trade_unfulfilled_sell_call_count": int(
                         op_raw_data[0][12].replace(",", "")
                     ),
-                    "tw_trade_unfulfilled_buy_put_amount": int(
+                    "tw_trade_unfulfilled_sell_call_amount": int(
                         op_raw_data[0][13].replace(",", "")
                     ),
                     "fr_trade_unfulfilled_buy_call_count": int(
@@ -282,16 +282,16 @@ def run_unfulfilled_op_scraper():
                     "fr_trade_unfulfilled_buy_call_amount": int(
                         op_raw_data[2][8].replace(",", "")
                     ),
-                    "fr_trade_unfulfilled_buy_put_count": int(
+                    "fr_trade_unfulfilled_sell_call_count": int(
                         op_raw_data[2][9].replace(",", "")
                     ),
-                    "fr_trade_unfulfilled_buy_put_amount": int(
+                    "fr_trade_unfulfilled_sell_call_amount": int(
                         op_raw_data[2][10].replace(",", "")
                     ),
-                    "tw_trade_unfulfilled_sell_call_count": int(
+                    "tw_trade_unfulfilled_buy_put_count": int(
                         op_raw_data[3][8].replace(",", "")
                     ),
-                    "tw_trade_unfulfilled_sell_call_amount": int(
+                    "tw_trade_unfulfilled_buy_put_amount": int(
                         op_raw_data[3][9].replace(",", "")
                     ),
                     "tw_trade_unfulfilled_sell_put_count": int(
@@ -300,10 +300,10 @@ def run_unfulfilled_op_scraper():
                     "tw_trade_unfulfilled_sell_put_amount": int(
                         op_raw_data[3][11].replace(",", "")
                     ),
-                    "fr_trade_unfulfilled_sell_call_count": int(
+                    "fr_trade_unfulfilled_buy_put_count": int(
                         op_raw_data[5][7].replace(",", "")
                     ),
-                    "fr_trade_unfulfilled_sell_call_amount": int(
+                    "fr_trade_unfulfilled_buy_put_amount": int(
                         op_raw_data[5][8].replace(",", "")
                     ),
                     "fr_trade_unfulfilled_sell_put_count": int(
