@@ -27,6 +27,13 @@ from .shioaji import get_account_margin
 from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
+from .scraper import run_report_scraper
+from ..lib.gemini import analyze_trading_report
+import os
+from dotenv import load_dotenv
+from ..utils.prompt import SYSTEM_PROMPTS
+
+load_dotenv()
 
 
 def run_analysis():
@@ -466,3 +473,65 @@ def get_unfulfilled_data():
         "footer": f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
     }
     push_bubble_message(bubble_message)
+
+
+def run_pre_report_analysis():
+    source_url = os.getenv("PRE_REPORT_URL")
+    target_report_name = os.getenv("PRE_REPORT_NAME")
+    print(target_report_name, source_url)
+    report_pdf_url, report_pdf_date = run_report_scraper(target_report_name, source_url)
+
+    if report_pdf_url:
+        results = analyze_trading_report(
+            report_pdf_url, SYSTEM_PROMPTS["pre_trading_analyst"]
+        )
+        bubble_message: BubbleMessage = {
+            "header": f"{report_pdf_date}_{target_report_name}",
+            "body": [
+                f"Future results",
+                f"TW: {results['future']['domestic']}",
+                f"FR: {results['future']['foreign']}",
+                f"---",
+                f"Option results",
+                f"TW: {results['option']['domestic']}",
+                f"FR: {results['option']['foreign']}",
+                f"---",
+                f"Overall results",
+                f"{results['overall']}",
+            ],
+            "footer": f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
+        }
+        push_bubble_message(bubble_message)
+    else:
+        core_logger.error("Failed to run pre-trading report analysis.")
+
+
+def run_post_report_analysis():
+    source_url = os.getenv("POST_REPORT_URL")
+    target_report_name = os.getenv("POST_REPORT_NAME")
+    report_pdf_url, report_pdf_date = run_report_scraper(target_report_name, source_url)
+    if report_pdf_url:
+        results = analyze_trading_report(
+            report_pdf_url, SYSTEM_PROMPTS["post_trading_analyst"]
+        )
+        bubble_message: BubbleMessage = {
+            "header": f"{report_pdf_date}_{target_report_name}",
+            "body": [
+                f"Future results",
+                f"TW: {results['future']['domestic']}",
+                f"FR: {results['future']['foreign']}",
+                f"Top 10: {results['future']['top_ten']}",
+                f"---",
+                f"Option results",
+                f"TW: {results['option']['domestic']}",
+                f"FR: {results['option']['foreign']}",
+                f"Top 10: {results['option']['top_ten']}",
+                f"---",
+                f"Overall results",
+                f"{results['overall']}",
+            ],
+            "footer": f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
+        }
+        push_bubble_message(bubble_message)
+    else:
+        core_logger.error("Failed to run post-trading report analysis.")

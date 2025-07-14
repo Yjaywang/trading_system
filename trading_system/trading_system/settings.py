@@ -175,6 +175,14 @@ CELERY_BEAT_SCHEDULE = {
             minute="20", hour="14", day_of_week="1-5"
         ),  # Mon to Fri 14:20
     },
+    "get-pre-market-report-analysis-task": {
+        "task": "core.tasks.pre_market_report_task",
+        "schedule": crontab(minute="30", hour="08", day_of_week="1-5"),
+    },  # Mon to Fri 08:30
+    "get-post-market-report-analysis-task": {
+        "task": "core.tasks.post_market_report_task",
+        "schedule": crontab(minute="30", hour="15", day_of_week="1-5"),
+    },  # Mon to Fri 15:30
     "daily-notification-task": {
         "task": "core.tasks.daily_notification_task",
         "schedule": crontab(

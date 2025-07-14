@@ -8,6 +8,7 @@ celerybeat-schedule.db
 *.pid
 nginx.conf
 nginx_production.conf
+prompt.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -13,6 +13,8 @@ from .services.analyzer import (
     send_this_year_results,
     get_risk_condition,
     get_unfulfilled_data,
+    run_pre_report_analysis,
+    run_post_report_analysis,
 )
 from .services.order import open_orders, close_orders
 from .services.line import push_message
@@ -28,6 +30,8 @@ default_daily_cron_status = {
     "analyzer_task": EMOJI_MAP["failure"],
     "open_position_task": EMOJI_MAP["failure"],
     "close_position_task": EMOJI_MAP["failure"],
+    "pre_market_report_task": EMOJI_MAP["failure"],
+    "post_market_report_task": EMOJI_MAP["failure"],
 }
 
 
@@ -96,6 +100,28 @@ def close_position_task():
     if daily_cron_status is None:
         daily_cron_status = default_daily_cron_status.copy()
     daily_cron_status["close_position_task"] = EMOJI_MAP["success"]
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
+
+
+@shared_task(max_retries=0)
+@celery_log_task_status
+def pre_market_report_task():
+    run_pre_report_analysis()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status["pre_market_report_task"] = EMOJI_MAP["success"]
+    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
+
+
+@shared_task(max_retries=0)
+@celery_log_task_status
+def post_market_report_task():
+    run_post_report_analysis()
+    daily_cron_status = cache.get(DAILY_CRON_STATUS)
+    if daily_cron_status is None:
+        daily_cron_status = default_daily_cron_status.copy()
+    daily_cron_status["post_market_report_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 

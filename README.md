@@ -32,7 +32,7 @@ git clone <your-repo-url>
 cd <your-folder>
 ```
 
-### 2. Add `.env` file
+### 2. Add `.env`, `trading_signal.py`, `prompt.py` file
 
 Copy or paste your environment variables into the project root.
 

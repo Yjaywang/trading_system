@@ -20,6 +20,8 @@ from ..serializers import (
 )
 from ..utils.helper import post_form_data, parse_html
 from ..middleware.error_decorators import core_logger
+import requests
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -967,3 +969,28 @@ def insert_init_unfulfilled_ft():
 
     except Exception as e:
         core_logger.error(f"An unexpected error occurred: {e}")
+
+
+def run_report_scraper(target_report_name: str, source_url: str):
+    base_url = os.getenv("BASE_URL")
+    today = datetime.now().date().strftime("%Y/%m/%d")
+
+    res = requests.get(source_url)
+    soup = BeautifulSoup(res.text, "html.parser")
+
+    # Find the specific report link for today
+    items = soup.select("ul#dataUl li")
+    pdf_url = None
+    pdf_date = None
+    for li in items:
+        pdf_date = li.find("span").text.strip()
+        report_name = li.find("a").text.strip()
+        print(pdf_date, report_name)
+        if pdf_date == today:
+            if target_report_name == report_name:
+                pdf_url = base_url + li.find("a").get("href")
+                break
+        else:
+            break
+
+    return pdf_url, pdf_date
