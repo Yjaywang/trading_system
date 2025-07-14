@@ -19,6 +19,8 @@ from .services.analyzer import (
     get_revenue,
     get_risk_condition,
     get_unfulfilled_data,
+    run_pre_report_analysis,
+    run_post_report_analysis,
 )
 from .services.order import (
     open_orders,
@@ -26,7 +28,7 @@ from .services.order import (
     open_some_orders,
     close_some_orders,
 )
-from .services.shioaji import get_position, get_api_usage, get_account_margin
+from .lib.shioaji import get_position, get_api_usage, get_account_margin
 import json
 from .middleware.error_decorators import core_logger
 
@@ -38,9 +40,9 @@ def view_dtl(request):
 
 
 @api_view(["POST"])
-# @require_secret_token
+@require_secret_token
 def test(request):
-    run_unfulfilled_op_scraper()
+    run_post_report_analysis()
     return Response("")
 
 

@@ -23,7 +23,7 @@ from ..utils.trump_words import (
 )
 from django.db.models import Sum
 from django.db.models.functions import ExtractWeek, ExtractMonth
-from .shioaji import get_account_margin
+from ..lib.shioaji import get_account_margin
 from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger

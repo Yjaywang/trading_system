@@ -2,7 +2,7 @@ import shioaji as sj
 import os
 import time
 from dotenv import load_dotenv
-from .line import push_message, push_bubble_message
+from ..services.line import push_message, push_bubble_message
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
 from ..utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
