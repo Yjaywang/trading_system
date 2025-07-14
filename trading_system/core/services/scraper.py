@@ -3,7 +3,6 @@ import time
 import json
 from datetime import datetime, timedelta, time as dt_time
 import pandas as pd
-from dotenv import load_dotenv
 from ..utils.constants import (
     WEEKDAY_TRANSFORM,
     DATE_FORMAT,
@@ -22,8 +21,6 @@ from ..utils.helper import post_form_data, parse_html
 from ..middleware.error_decorators import core_logger
 import requests
 from bs4 import BeautifulSoup
-
-load_dotenv()
 
 
 def run_op_scraper():

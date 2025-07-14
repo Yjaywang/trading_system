@@ -1,13 +1,10 @@
 from google import genai
 import os
-from dotenv import load_dotenv
 import httpx
 import json
 from pydantic import BaseModel
 from ..middleware.error_decorators import core_logger
 from typing import Optional
-
-load_dotenv()
 
 
 class TraderInsights(BaseModel):

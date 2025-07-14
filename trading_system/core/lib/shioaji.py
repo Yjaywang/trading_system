@@ -1,7 +1,6 @@
 import shioaji as sj
 import os
 import time
-from dotenv import load_dotenv
 from ..services.line import push_message, push_bubble_message
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
@@ -10,7 +9,6 @@ from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
 
-load_dotenv()
 
 # TXF    大臺
 # MXF    小臺

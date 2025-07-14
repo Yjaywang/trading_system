@@ -1,6 +1,5 @@
 import requests
 import os
-from dotenv import load_dotenv
 from ..utils.constants import (
     LINE_BUBBLE_MESSAGE_TEMPLATE,
     LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE,
@@ -8,9 +7,6 @@ from ..utils.constants import (
 from ..types import BubbleMessage
 from distutils.util import strtobool
 from ..middleware.error_decorators import core_logger
-import json
-
-load_dotenv()
 
 
 def push_message(message):

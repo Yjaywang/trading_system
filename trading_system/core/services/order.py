@@ -6,12 +6,9 @@ from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE, EMOJI
 from ..utils.trump_words import TRUMP_STYLE_TRADING_CONGRATS, TRUMP_STYLE_LOSS_COMFORTS
 from .line import push_message, push_bubble_message
 from ..lib.shioaji import open_position, close_position, close_some_position
-from dotenv import load_dotenv
 from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
-
-load_dotenv()
 
 
 def _get_today_date_info():

@@ -30,10 +30,7 @@ from ..middleware.error_decorators import core_logger
 from .scraper import run_report_scraper
 from ..lib.gemini import analyze_trading_report
 import os
-from dotenv import load_dotenv
 from ..utils.prompt import SYSTEM_PROMPTS
-
-load_dotenv()
 
 
 def run_analysis():
