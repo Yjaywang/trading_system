@@ -27,7 +27,7 @@ from ..lib.shioaji import get_account_margin
 from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
-from .scraper import run_report_scraper
+from .scraper import get_fear_greed_index, run_report_scraper
 from ..lib.gemini import analyze_trading_report
 import os
 from ..utils.prompt import SYSTEM_PROMPTS
@@ -475,9 +475,8 @@ def get_unfulfilled_data():
 def run_pre_report_analysis():
     source_url = os.getenv("PRE_REPORT_URL")
     target_report_name = os.getenv("PRE_REPORT_NAME")
-    print(target_report_name, source_url)
     report_pdf_url, report_pdf_date = run_report_scraper(target_report_name, source_url)
-
+    score, rating, date, previous_1_week = get_fear_greed_index()
     if report_pdf_url:
         results = analyze_trading_report(
             report_pdf_url, SYSTEM_PROMPTS["pre_trading_analyst"]
@@ -485,6 +484,12 @@ def run_pre_report_analysis():
         bubble_message: BubbleMessage = {
             "header": f"{report_pdf_date}_{target_report_name}",
             "body": [
+                f"Fear and Greed Index",
+                f"Date: {date}",
+                f"Score: {EMOJI_MAP['up_chart'] if score-previous_1_week >= 0 else EMOJI_MAP['down_chart']} {score} ({round(score-previous_1_week,2)})",
+                f"Rating: {rating}",
+                f"Previous 1 Week: {previous_1_week}",
+                f"---",
                 f"Future results",
                 f"TW: {results['future']['domestic']}",
                 f"FR: {results['future']['foreign']}",

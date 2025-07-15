@@ -969,25 +969,53 @@ def insert_init_unfulfilled_ft():
 
 
 def run_report_scraper(target_report_name: str, source_url: str):
-    base_url = os.getenv("BASE_URL")
-    today = datetime.now().date().strftime("%Y/%m/%d")
+    try:
+        base_url = os.getenv("BASE_URL")
+        today = datetime.now().date().strftime("%Y/%m/%d")
 
-    res = requests.get(source_url)
-    soup = BeautifulSoup(res.text, "html.parser")
+        res = requests.get(source_url)
+        soup = BeautifulSoup(res.text, "html.parser")
 
-    # Find the specific report link for today
-    items = soup.select("ul#dataUl li")
-    pdf_url = None
-    pdf_date = None
-    for li in items:
-        pdf_date = li.find("span").text.strip()
-        report_name = li.find("a").text.strip()
-        print(pdf_date, report_name)
-        if pdf_date == today:
-            if target_report_name == report_name:
-                pdf_url = base_url + li.find("a").get("href")
+        # Find the specific report link for today
+        items = soup.select("ul#dataUl li")
+        pdf_url = None
+        pdf_date = None
+        for li in items:
+            pdf_date = li.find("span").text.strip()
+            report_name = li.find("a").text.strip()
+            print(pdf_date, report_name)
+            if pdf_date == today:
+                if target_report_name == report_name:
+                    pdf_url = base_url + li.find("a").get("href")
+                    break
+            else:
                 break
-        else:
-            break
+        return pdf_url, pdf_date
+    except Exception as e:
+        core_logger.error(f"error: {e}")
+        return None, None
 
-    return pdf_url, pdf_date
+
+def get_fear_greed_index():
+    try:
+        url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+
+        data = response.json()
+        fear_and_greed_data = data.get("fear_and_greed", {})
+
+        score = fear_and_greed_data.get("score")
+        rating = fear_and_greed_data.get("rating")
+        timestamp = fear_and_greed_data.get("timestamp")
+        previous_1_week = fear_and_greed_data.get("previous_1_week")
+        dt_object = datetime.fromisoformat(timestamp)
+        formatted_date = dt_object.strftime(DATE_FORMAT)
+        return score, rating, formatted_date, previous_1_week
+
+    except Exception as e:
+        core_logger.error(f"error: {e}")
+        return 0, "", "1000/01/01", 0
