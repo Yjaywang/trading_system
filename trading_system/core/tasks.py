@@ -22,6 +22,7 @@ from django.core.cache import cache
 from .utils.constants import DAILY_CRON_STATUS, EMOJI_MAP, DATE_FORMAT_2
 from datetime import date
 from .middleware.error_decorators import celery_log_task_status
+import copy
 
 default_daily_cron_status = {
     "op_scraper_task": EMOJI_MAP["failure"],
@@ -41,7 +42,7 @@ def op_scraper_task():
     run_op_scraper()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["op_scraper_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -52,7 +53,7 @@ def price_scraper_task():
     run_price_scraper()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["price_scraper_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -65,7 +66,7 @@ def unfulfilled_data_summary_task():
     get_unfulfilled_data()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["unfulfilled_data_summary_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -76,7 +77,7 @@ def analyzer_task():
     run_analysis()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["analyzer_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -87,7 +88,7 @@ def open_position_task():
     open_orders()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["open_position_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -98,7 +99,7 @@ def close_position_task():
     close_orders()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["close_position_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -109,7 +110,7 @@ def pre_market_report_task():
     run_pre_report_analysis()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["pre_market_report_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
@@ -120,7 +121,7 @@ def post_market_report_task():
     run_post_report_analysis()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
-        daily_cron_status = default_daily_cron_status.copy()
+        daily_cron_status = copy.deepcopy(default_daily_cron_status)
     daily_cron_status["post_market_report_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 

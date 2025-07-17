@@ -7,6 +7,7 @@ from ..utils.constants import (
 from ..types import BubbleMessage
 from distutils.util import strtobool
 from ..middleware.error_decorators import core_logger
+import copy
 
 
 def push_message(message):
@@ -35,10 +36,10 @@ def push_message(message):
 def push_bubble_message(message: BubbleMessage):
     if not bool(strtobool(os.getenv("LINE_NOTIFY", "False"))):
         return
-    bubble_message = LINE_BUBBLE_MESSAGE_TEMPLATE.copy()
+    bubble_message = copy.deepcopy(LINE_BUBBLE_MESSAGE_TEMPLATE)
     bubble_message["header"]["contents"][0]["text"] = message.get("header", "")
     for content in message.get("body", []):
-        body_content = LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE.copy()
+        body_content = copy.deepcopy(LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE)
         body_content["text"] = content
         bubble_message["body"]["contents"].append(body_content)
     if "footer" not in message:
