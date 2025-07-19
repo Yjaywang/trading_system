@@ -13,7 +13,7 @@ from ..utils.trading_signal import (
     calculate_final_signal,
 )
 from datetime import datetime, timedelta, time as date
-from .line import push_bubble_message
+from .line import push_bubble_message, push_message
 from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
 from ..utils.trump_words import (
     TRUMP_STYLE_ANALYSIS_JOKES,
@@ -31,6 +31,7 @@ from .scraper import get_fear_greed_index, run_report_scraper
 from ..lib.gemini import analyze_trading_report
 import os
 from ..utils.prompt import SYSTEM_PROMPTS
+from django.core.cache import cache
 
 
 def run_analysis():
@@ -347,6 +348,12 @@ def get_risk_condition():
                     "footer": random.choice(TRUMP_STYLE_MARGIN_CALL_JOKES),
                 }
                 push_bubble_message(bubble_message)
+    # push sj error message
+    sj_error_messages = cache.get("sj_error")
+    if sj_error_messages:
+        message = "\n\n".join(sj_error_messages)
+        push_message(message)
+        cache.delete("sj_error")
 
 
 def _get_unfulfilled_ft_data(today: date, trader_list: list):

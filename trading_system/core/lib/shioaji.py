@@ -8,7 +8,7 @@ from ..utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
 from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
-
+from django.core.cache import cache
 
 # TXF    大臺
 # MXF    小臺
@@ -237,8 +237,8 @@ def _process_deal(trade, contract_category, action):
         }
     else:
         message = "Trade is not filled."
-        print(message)
-        push_message(message)
+        core_logger.error(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
         return None
 
 
@@ -280,8 +280,12 @@ def open_position(contract_category, action, quantity):  # Buy, Sell
                 data = dict(position)
                 if contract_category in data["code"]:
                     message = f"position already exists."
-                    print(message)
-                    push_message(message)
+                    core_logger.error(message)
+                    cache.set(
+                        "sj_error",
+                        (cache.get("sj_error") or []) + [message],
+                        timeout=3600,
+                    )
                     return None
         order = api_wrapper._get_order(action, quantity)
         trade = api_wrapper._make_a_deal(contract, order)
@@ -291,8 +295,8 @@ def open_position(contract_category, action, quantity):  # Buy, Sell
         return None
     except Exception:
         message = f"Open position error"
-        print(message)
-        push_message(message)
+        core_logger.error(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
         return None
     finally:
         api_wrapper._close()
@@ -310,8 +314,10 @@ def close_position(contract_category):
         current_position = api_wrapper._get_current_position()
         if not current_position:
             message = "No position in account"
-            print(message)
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return None
 
         for position in current_position:
@@ -324,8 +330,10 @@ def close_position(contract_category):
                 break
         if not action or not quantity:
             message = "No matching position found"
-            print(message)
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return None
 
         contract = api_wrapper._get_contract_by_code(contract_type, contract_code)
@@ -333,7 +341,10 @@ def close_position(contract_category):
         today = datetime.today().strftime("%Y/%m/%d")
         if delivery_date == today:
             message = "Settlement date will close position automatically."
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return _settlement_deal(current_position, contract_category, action)
 
         order = api_wrapper._get_order(action, quantity)
@@ -347,8 +358,8 @@ def close_position(contract_category):
         return None
     except Exception:
         message = f"Close position error"
-        print(message)
-        push_message(message)
+        core_logger.error(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
         return None
     finally:
         api_wrapper._close()
@@ -368,8 +379,8 @@ def get_position():
         return position_data_objs
     except Exception as e:
         message = f"Get position error"
-        print(message)
-        push_message(message)
+        core_logger.error(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
         return None
     finally:
         api_wrapper._close()
@@ -411,8 +422,10 @@ def close_some_position(contract_category, quantity):
         current_position = api_wrapper._get_current_position()
         if not current_position:
             message = "No position in account"
-            print(message)
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return None
 
         for position in current_position:
@@ -425,13 +438,17 @@ def close_some_position(contract_category, quantity):
                 break
         if quantity > current_quantity:
             message = "Exceed current position quantity"
-            print(message)
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return None
         if not action:
             message = "No matching position found"
-            print(message)
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return None
 
         contract = api_wrapper._get_contract_by_code(contract_type, contract_code)
@@ -439,7 +456,10 @@ def close_some_position(contract_category, quantity):
         today = datetime.today().strftime("%Y/%m/%d")
         if delivery_date == today:
             message = "Settlement date will close position automatically."
-            push_message(message)
+            core_logger.error(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
             return _settlement_deal(current_position, contract_category, action)
 
         order = api_wrapper._get_order(action, quantity)
@@ -453,8 +473,8 @@ def close_some_position(contract_category, quantity):
         return None
     except Exception:
         message = f"Close position error"
-        print(message)
-        push_message(message)
+        core_logger.error(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
         return None
     finally:
         api_wrapper._close()

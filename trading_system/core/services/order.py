@@ -9,6 +9,7 @@ from ..lib.shioaji import open_position, close_position, close_some_position
 from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
+from django.core.cache import cache
 
 
 def _get_today_date_info():
@@ -85,19 +86,34 @@ def open_orders():
                 else:
                     message = "Deal is in trouble, please check your account"
                     core_logger.error(message)
-                    push_message(message)
+                    cache.set(
+                        "sj_error",
+                        (cache.get("sj_error") or []) + [message],
+                        timeout=3600,
+                    )
             else:
                 message = "Signal is none, please check db"
                 core_logger.error(message)
-                push_message(message)
+                cache.set(
+                    "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+                )
         else:
             message = "Not latest signal, please check db"
             core_logger.error(message)
-            push_message(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
     except Exception as e:
         message = f"Place order error: {e}"
         core_logger.error(message)
-        push_message(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
+    finally:
+        # push sj error message
+        sj_error_messages = cache.get("sj_error")
+        if sj_error_messages:
+            message = "\n\n".join(sj_error_messages)
+            push_message(message)
+            cache.delete("sj_error")
 
 
 def close_orders():
@@ -131,11 +147,20 @@ def close_orders():
         else:
             message = "Deal is in trouble, please check your account"
             core_logger.error(message)
-            push_message(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
     except Exception as e:
         message = f"Close order error: {e}"
         core_logger.error(message)
-        push_message(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
+    finally:
+        # push sj error message
+        sj_error_messages = cache.get("sj_error")
+        if sj_error_messages:
+            message = "\n\n".join(sj_error_messages)
+            push_message(message)
+            cache.delete("sj_error")
 
 
 def open_some_orders(quantity):
@@ -154,19 +179,34 @@ def open_some_orders(quantity):
                 else:
                     message = "Deal is in trouble, please check your account"
                     core_logger.error(message)
-                    push_message(message)
+                    cache.set(
+                        "sj_error",
+                        (cache.get("sj_error") or []) + [message],
+                        timeout=3600,
+                    )
             else:
                 message = "Signal is none, please check db"
                 core_logger.error(message)
-                push_message(message)
+                cache.set(
+                    "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+                )
         else:
             message = "Not latest signal, please check db"
             core_logger.error(message)
-            push_message(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
     except Exception as e:
         message = f"Place order error: {e}"
         core_logger.error(message)
-        push_message(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
+    finally:
+        # push sj error message
+        sj_error_messages = cache.get("sj_error")
+        if sj_error_messages:
+            message = "\n\n".join(sj_error_messages)
+            push_message(message)
+            cache.delete("sj_error")
 
 
 def close_some_orders(quantity):
@@ -200,8 +240,17 @@ def close_some_orders(quantity):
         else:
             message = "Deal is in trouble, please check your account"
             core_logger.error(message)
-            push_message(message)
+            cache.set(
+                "sj_error", (cache.get("sj_error") or []) + [message], timeout=3600
+            )
     except Exception as e:
         message = f"Close order error: {e}"
         core_logger.error(message)
-        push_message(message)
+        cache.set("sj_error", (cache.get("sj_error") or []) + [message], timeout=3600)
+    finally:
+        # push sj error message
+        sj_error_messages = cache.get("sj_error")
+        if sj_error_messages:
+            message = "\n\n".join(sj_error_messages)
+            push_message(message)
+            cache.delete("sj_error")
