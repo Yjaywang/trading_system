@@ -27,7 +27,7 @@ import copy
 default_daily_cron_status = {
     "op_scraper_task": EMOJI_MAP["failure"],
     "price_scraper_task": EMOJI_MAP["failure"],
-    "unfulfilled_data_summary_task": EMOJI_MAP["failure"],
+    "unfulfilled_summary_task": EMOJI_MAP["failure"],
     "analyzer_task": EMOJI_MAP["failure"],
     "open_position_task": EMOJI_MAP["failure"],
     "close_position_task": EMOJI_MAP["failure"],
@@ -67,7 +67,7 @@ def unfulfilled_data_summary_task():
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
         daily_cron_status = copy.deepcopy(default_daily_cron_status)
-    daily_cron_status["unfulfilled_data_summary_task"] = EMOJI_MAP["success"]
+    daily_cron_status["unfulfilled_summary_task"] = EMOJI_MAP["success"]
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 

@@ -14,6 +14,7 @@ from ..types import BubbleMessage
 import random
 from ..middleware.error_decorators import core_logger
 from django.core.cache import cache
+from ..lib.notion import insert_trade_record_to_notion
 
 
 def _get_today_date_info():
@@ -160,6 +161,13 @@ def close_orders():
                     ),
                 }
                 push_bubble_message(bubble_message)
+
+                insert_trade_record_to_notion(
+                    revenue_data["open_price"],
+                    revenue_data["close_price"],
+                    revenue_data["quantity"],
+                    revenue_data["direction"],
+                )
         else:
             message = "Deal is in trouble, please check your account"
             core_logger.error(message)
@@ -265,6 +273,12 @@ def close_some_orders(quantity):
                     ),
                 }
                 push_bubble_message(bubble_message)
+                insert_trade_record_to_notion(
+                    revenue_data["open_price"],
+                    revenue_data["close_price"],
+                    revenue_data["quantity"],
+                    revenue_data["direction"],
+                )
         else:
             message = "Deal is in trouble, please check your account"
             core_logger.error(message)

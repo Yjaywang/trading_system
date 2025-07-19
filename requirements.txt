@@ -18,3 +18,4 @@ django-redis==6.0.0
 google-genai==1.25.0
 httpx==0.28.1
 pydantic==2.11.7
+notion-client==2.4.0
