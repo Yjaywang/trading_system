@@ -3,7 +3,11 @@ from datetime import datetime
 from ..models import Signal
 from ..serializers import OrderSerializer, SignalSerializer, RevenueSerializer
 from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE, EMOJI_MAP
-from ..utils.trump_words import TRUMP_STYLE_TRADING_CONGRATS, TRUMP_STYLE_LOSS_COMFORTS
+from ..utils.trump_words import (
+    TRUMP_STYLE_FUNNY_TRADE_BLESSINGS,
+    TRUMP_STYLE_TRADING_CONGRATS,
+    TRUMP_STYLE_LOSS_COMFORTS,
+)
 from .line import push_message, push_bubble_message
 from ..lib.shioaji import open_position, close_position, close_some_position
 from ..types import BubbleMessage
@@ -82,6 +86,18 @@ def open_orders():
             if trading_signal is not None and quantity != 0:
                 deal_result = open_position(contract_code, action, quantity)
                 if deal_result is not None:
+                    bubble_message: BubbleMessage = {
+                        "header": f" Deal start",
+                        "body": [
+                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                            f"2. Product: {deal_result['product']}",
+                            f"3. Action: {deal_result['action']}",
+                            f"4. Avg Price: {deal_result['price']}",
+                            f"5. Quantity: {deal_result['quantity']}",
+                        ],
+                        "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}",
+                    }
+                    push_bubble_message(bubble_message)
                     _record_deal(deal_result, contract_code, action)
                 else:
                     message = "Deal is in trouble, please check your account"
@@ -175,6 +191,18 @@ def open_some_orders(quantity):
             if trading_signal is not None and quantity != 0:
                 deal_result = open_position(contract_code, action, quantity)
                 if deal_result is not None:
+                    bubble_message: BubbleMessage = {
+                        "header": f" Deal start",
+                        "body": [
+                            f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
+                            f"2. Product: {deal_result['product']}",
+                            f"3. Action: {deal_result['action']}",
+                            f"4. Avg Price: {deal_result['price']}",
+                            f"5. Quantity: {deal_result['quantity']}",
+                        ],
+                        "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}",
+                    }
+                    push_bubble_message(bubble_message)
                     _record_deal(deal_result, contract_code, action)
                 else:
                     message = "Deal is in trouble, please check your account"
@@ -219,7 +247,7 @@ def close_some_orders(quantity):
             revenue_data = _record_revenue(deal_result, contract_code, action)
             if revenue_data is not None:
                 bubble_message: BubbleMessage = {
-                    "header": "Today's revenue",
+                    "header": "Today's some revenue",
                     "body": [
                         f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
                         f"2. product: {contract_code}",

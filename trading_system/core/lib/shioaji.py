@@ -1,7 +1,7 @@
 import shioaji as sj
 import os
 import time
-from ..services.line import push_message, push_bubble_message
+from ..services.line import push_bubble_message
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
 from ..utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
@@ -218,22 +218,11 @@ def _process_deal(trade, contract_category, action):
         total_deal_price = sum(deal["price"] * deal["quantity"] for deal in deals)
         total_deal_quantity = sum(deal["quantity"] for deal in deals)
         avg_deal_price = total_deal_price / total_deal_quantity
-        bubble_message: BubbleMessage = {
-            "header": f" Deal start",
-            "body": [
-                f"1. {datetime.now().strftime('%Y/%m/%d %H:%M:%S')}",
-                f"2. Product: {contract_category}",
-                f"3. Action: {action}",
-                f"4. Avg Price: {avg_deal_price}",
-                f"5. Quantity: {total_deal_quantity}",
-            ],
-            "footer": f"{random.choice(TRUMP_STYLE_FUNNY_TRADE_BLESSINGS)}",
-        }
-        push_bubble_message(bubble_message)
         return {
             "price": avg_deal_price,
             "quantity": total_deal_quantity,
             "action": action,
+            "product": contract_category,
         }
     else:
         message = "Trade is not filled."
