@@ -37,7 +37,7 @@ services:
       - ./logs/app:/logs/app
     ports:
       - "8000:8000"
-      - "5555:5555"
+      # - "5555:5555"
     depends_on:
       redis:
         condition: service_healthy
