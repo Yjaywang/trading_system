@@ -1,8 +1,8 @@
 from notion_client import Client
-import os
 from datetime import datetime
-from ..utils.constants import DATE_FORMAT_2
-from ..middleware.error_decorators import core_logger
+from core.utils.constants import DATE_FORMAT_2
+from core.middleware.error_decorators import core_logger
+from django.conf import settings
 
 _notion_client = None
 _database_id = None
@@ -11,7 +11,7 @@ _database_id = None
 def get_notion_client() -> Client:
     global _notion_client
     if _notion_client is None:
-        token = os.getenv("NOTION_TOKEN")
+        token = settings.NOTION_TOKEN
         if not token:
             raise ValueError("NOTION_TOKEN environment variable not set.")
         _notion_client = Client(auth=token)
@@ -21,7 +21,7 @@ def get_notion_client() -> Client:
 def get_database_id() -> str:
     global _database_id
     if _database_id is None:
-        db_id = os.getenv("NOTION_DATABASE_ID")
+        db_id = settings.NOTION_DATABASE_ID
         if not db_id:
             raise ValueError("NOTION_DATABASE_ID environment variable not set.")
         _database_id = db_id
@@ -34,6 +34,8 @@ ACTION_MAP = {"Buy": "多", "Sell": "空"}
 def insert_trade_record_to_notion(
     open_price: float, close_price: float, quantity: int, direction: str
 ) -> dict:
+    if settings.APP_ENV.lower() != "production":
+        return
     if direction not in ACTION_MAP:
         raise ValueError(f"Invalid direction: {direction}. Must be 'Buy' or 'Sell'.")
 

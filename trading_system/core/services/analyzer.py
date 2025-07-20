@@ -1,21 +1,20 @@
-from ..models import OptionData, Signal, Revenue, UnfulfilledFt, UnfulfilledOp
-from ..serializers import (
+from core.models import OptionData, Signal, Revenue, UnfulfilledFt, UnfulfilledOp
+from core.serializers import (
     OptionDataSerializer,
     SignalSerializer,
-    RevenueSerializer,
     UnfulfilledFtSerializer,
     UnfulfilledOpSerializer,
 )
-from ..utils.trading_signal import (
+from core.utils.trading_signal import (
     trading_signal_v4,
     reverse_signal_v1,
     settlement_signal_v1,
     calculate_final_signal,
 )
 from datetime import datetime, timedelta, time as date
-from .line import push_bubble_message, push_message
-from ..utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
-from ..utils.trump_words import (
+from core.lib.line import push_bubble_message, push_message
+from core.utils.constants import DATE_FORMAT, EMOJI_MAP, TRADING_SIGNAL_MAP
+from core.utils.trump_words import (
     TRUMP_STYLE_ANALYSIS_JOKES,
     TRUMP_STYLE_TRADING_CONGRATS,
     TRUMP_STYLE_LOSS_COMFORTS,
@@ -23,15 +22,15 @@ from ..utils.trump_words import (
 )
 from django.db.models import Sum
 from django.db.models.functions import ExtractWeek, ExtractMonth
-from ..lib.shioaji import get_account_margin
-from ..types import BubbleMessage
+from core.lib.shioaji import get_account_margin
+from core.types import BubbleMessage
 import random
-from ..middleware.error_decorators import core_logger
-from .scraper import get_fear_greed_index, run_report_scraper
-from ..lib.gemini import analyze_trading_report
-import os
-from ..utils.prompt import SYSTEM_PROMPTS
+from core.middleware.error_decorators import core_logger
+from core.services.scraper import get_fear_greed_index, run_report_scraper
+from core.lib.gemini import analyze_trading_report
+from core.utils.prompt import SYSTEM_PROMPTS
 from django.core.cache import cache
+from django.conf import settings
 
 
 def run_analysis():
@@ -480,8 +479,8 @@ def get_unfulfilled_data():
 
 
 def run_pre_report_analysis():
-    source_url = os.getenv("PRE_REPORT_URL")
-    target_report_name = os.getenv("PRE_REPORT_NAME")
+    source_url = settings.PRE_REPORT_URL
+    target_report_name = settings.PRE_REPORT_NAME
     report_pdf_url, report_pdf_date = run_report_scraper(target_report_name, source_url)
     score, rating, date, previous_1_week = get_fear_greed_index()
     if report_pdf_url:
@@ -516,8 +515,8 @@ def run_pre_report_analysis():
 
 
 def run_post_report_analysis():
-    source_url = os.getenv("POST_REPORT_URL")
-    target_report_name = os.getenv("POST_REPORT_NAME")
+    source_url = settings.POST_REPORT_URL
+    target_report_name = settings.POST_REPORT_NAME
     report_pdf_url, report_pdf_date = run_report_scraper(target_report_name, source_url)
     if report_pdf_url:
         results = analyze_trading_report(

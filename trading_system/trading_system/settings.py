@@ -10,6 +10,86 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import environ
+
+env = environ.Env(
+    APP_ENV=(str, None),
+    DJANGO_SECRET_KEY=(str, None),
+    TRADING_SECRET_TOKEN=(str, None),
+    DB_NAME=(str, None),
+    DB_USER=(str, None),
+    DB_PASSWORD=(str, None),
+    DB_HOST=(str, None),
+    DB_PORT=(str, None),
+    ALLOW_DOMAIN=(str, None),
+    LINE_CHANNEL_ACCESS_TOKEN=(str, None),
+    LINE_USER_ID=(str, None),
+    LINE_PUSH_MESSAGE_URL=(str, None),
+    LINE_NOTIFY=(bool, False),
+    OPTION_DATA_API=(str, None),
+    FUTURE_DATA_API=(str, None),
+    MARKET_PRICE_DATA_API=(str, None),
+    SHIOAJI_CA_PASSWORD=(str, None),
+    SHIOAJI_PERSONAL_ID=(str, None),
+    SHIOAJI_API_KEY=(str, None),
+    SHIOAJI_SECRET_KEY=(str, None),
+    SHIOAJI_CA_FILE_NAME=(str, None),
+    POST_REPORT_URL=(str, None),
+    POST_REPORT_NAME=(str, None),
+    PRE_REPORT_URL=(str, None),
+    PRE_REPORT_NAME=(str, None),
+    BASE_URL=(str, None),
+    GEMINI_API_KEY=(str, None),
+    NOTION_TOKEN=(str, None),
+    NOTION_DATABASE_ID=(str, None),
+    PRODUCT_CODE=(str, None),
+    PRODUCT_QUANTITY=(int, None),
+)
+env.read_env(".env")
+
+########Django environment variables
+APP_ENV: str = env("APP_ENV")
+DJANGO_SECRET_KEY: str = env("DJANGO_SECRET_KEY")
+TRADING_SECRET_TOKEN: str = env("TRADING_SECRET_TOKEN")
+########Database environment variables
+DB_NAME: str = env("DB_NAME")
+DB_USER: str = env("DB_USER")
+DB_PASSWORD: str = env("DB_PASSWORD")
+DB_HOST: str = env("DB_HOST")
+DB_PORT: str = env("DB_PORT")
+########Domain environment variables
+ALLOW_DOMAIN: str = env("ALLOW_DOMAIN")
+########Line environment variables
+LINE_CHANNEL_ACCESS_TOKEN: str = env("LINE_CHANNEL_ACCESS_TOKEN")
+LINE_USER_ID: str = env("LINE_USER_ID")
+LINE_PUSH_MESSAGE_URL: str = env("LINE_PUSH_MESSAGE_URL")
+LINE_NOTIFY: bool = env.bool("LINE_NOTIFY")
+########Market data api environment variables
+OPTION_DATA_API: str = env("OPTION_DATA_API")
+FUTURE_DATA_API: str = env("FUTURE_DATA_API")
+MARKET_PRICE_DATA_API: str = env("MARKET_PRICE_DATA_API")
+########shioaji api environment variables
+SHIOAJI_CA_PASSWORD: str = env("SHIOAJI_CA_PASSWORD")
+SHIOAJI_PERSONAL_ID: str = env("SHIOAJI_PERSONAL_ID")
+SHIOAJI_API_KEY: str = env("SHIOAJI_API_KEY")
+SHIOAJI_SECRET_KEY: str = env("SHIOAJI_SECRET_KEY")
+SHIOAJI_CA_FILE_NAME: str = env("SHIOAJI_CA_FILE_NAME")
+########Market report api environment variables
+POST_REPORT_URL: str = env("POST_REPORT_URL")
+POST_REPORT_NAME: str = env("POST_REPORT_NAME")
+PRE_REPORT_URL: str = env("PRE_REPORT_URL")
+PRE_REPORT_NAME: str = env("PRE_REPORT_NAME")
+BASE_URL: str = env("BASE_URL")
+########Gemini api environment variables
+GEMINI_API_KEY: str = env("GEMINI_API_KEY")
+########Notion api environment variables
+NOTION_TOKEN: str = env("NOTION_TOKEN")
+NOTION_DATABASE_ID: str = env("NOTION_DATABASE_ID")
+########Trading environment variables
+PRODUCT_CODE: str = env("PRODUCT_CODE")
+PRODUCT_QUANTITY: int = env.int("PRODUCT_QUANTITY")
+
+
 from pathlib import Path
 import os
 from celery.schedules import crontab
@@ -22,13 +102,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-TRADING_SECRET_TOKEN = os.getenv("TRADING_SECRET_TOKEN")
+SECRET_KEY = DJANGO_SECRET_KEY
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("APP_ENV", "").lower() not in ("production", "dev")
+DEBUG = APP_ENV.lower() not in ("production", "dev")
 
-ALLOWED_HOSTS = os.getenv("ALLOW_DOMAIN", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = ALLOW_DOMAIN.split(",")
 
 # Application definition
 
@@ -81,11 +161,11 @@ WSGI_APPLICATION = "trading_system.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
     }
 }
 
@@ -142,6 +222,7 @@ CACHES = {
 }
 
 # Celery settings
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/0"
 CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:6379/0"
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -241,8 +322,10 @@ LOGGING = {
         },
         "file": {
             "level": "INFO",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": "/logs/app/core_info.log",
+            "maxBytes": 1024 * 1024 * 10,
+            "backupCount": 5,
             "formatter": "verbose",
         },
         "mail_admins": {
@@ -252,17 +335,19 @@ LOGGING = {
         },
         "celery_file": {
             "level": "INFO",
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": "/logs/app/celery_info.log",
+            "maxBytes": 1024 * 1024 * 10,
+            "backupCount": 5,
             "formatter": "simple",
         },
     },
     "loggers": {
-        # 'django': {
-        #     'handlers': ['console', 'file', 'mail_admins'],
-        #     'level': 'DEBUG' if DEBUG else 'INFO',
-        #     'propagate': True,
-        # },
+        "django": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
         "django.request": {
             "handlers": ["mail_admins"],
             "level": "ERROR",
@@ -271,12 +356,16 @@ LOGGING = {
         "core": {
             "handlers": ["console", "file"],
             "level": "DEBUG" if DEBUG else "INFO",
-            "propagate": True,
+            "propagate": False,
         },
         "celery": {
             "handlers": ["console", "celery_file"],
             "level": "INFO",
-            "propagate": True,
+            "propagate": False,
         },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
     },
 }

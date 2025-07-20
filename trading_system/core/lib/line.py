@@ -1,25 +1,24 @@
 import requests
-import os
-from ..utils.constants import (
+from core.utils.constants import (
     LINE_BUBBLE_MESSAGE_TEMPLATE,
     LINE_BUBBLE_MESSAGE_BODY_CONTENT_TEMPLATE,
 )
-from ..types import BubbleMessage
-from distutils.util import strtobool
-from ..middleware.error_decorators import core_logger
+from core.types import BubbleMessage
+from core.middleware.error_decorators import core_logger
 import copy
+from django.conf import settings
 
 
 def push_message(message):
-    if not bool(strtobool(os.getenv("LINE_NOTIFY", "False"))):
+    if not settings.LINE_NOTIFY:
         return
-    url = f"{os.getenv('LINE_PUSH_MESSAGE_URL')}"
+    url = f"{settings.LINE_PUSH_MESSAGE_URL}"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN')}",
+        "Authorization": f"Bearer {settings.LINE_CHANNEL_ACCESS_TOKEN}",
     }
     data = {
-        "to": os.getenv("LINE_USER_ID"),
+        "to": settings.LINE_USER_ID,
         "messages": [{"type": "text", "text": f"{message}"}],
     }
 
@@ -34,7 +33,7 @@ def push_message(message):
 
 
 def push_bubble_message(message: BubbleMessage):
-    if not bool(strtobool(os.getenv("LINE_NOTIFY", "False"))):
+    if not settings.LINE_NOTIFY:
         return
     bubble_message = copy.deepcopy(LINE_BUBBLE_MESSAGE_TEMPLATE)
     bubble_message["header"]["contents"][0]["text"] = message.get("header", "")
@@ -46,13 +45,13 @@ def push_bubble_message(message: BubbleMessage):
         del bubble_message["footer"]
     else:
         bubble_message["footer"]["contents"][0]["text"] = message.get("footer", "")
-    url = f"{os.getenv('LINE_PUSH_MESSAGE_URL')}"
+    url = f"{settings.LINE_PUSH_MESSAGE_URL}"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN')}",
+        "Authorization": f"Bearer {settings.LINE_CHANNEL_ACCESS_TOKEN}",
     }
     data = {
-        "to": os.getenv("LINE_USER_ID"),
+        "to": settings.LINE_USER_ID,
         "messages": [
             {
                 "type": "flex",

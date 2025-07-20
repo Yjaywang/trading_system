@@ -1,4 +1,4 @@
-from ..types import EMOJIMap
+from core.types import EMOJIMap
 
 DATE_FORMAT = "%Y/%m/%d"
 DATE_FORMAT_2 = "%Y-%m-%d"

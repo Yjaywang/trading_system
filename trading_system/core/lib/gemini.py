@@ -1,10 +1,9 @@
 from google import genai
-import os
 import httpx
-import json
 from pydantic import BaseModel
-from ..middleware.error_decorators import core_logger
+from core.middleware.error_decorators import core_logger
 from typing import Optional
+from django.conf import settings
 
 
 class TraderInsights(BaseModel):
@@ -19,7 +18,7 @@ class TradingAnalysis(BaseModel):
     overall: str
 
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", ""))
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 
 def analyze_trading_report(doc_url: str, system_prompt) -> TradingAnalysis | None:

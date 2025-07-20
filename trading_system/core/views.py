@@ -1,9 +1,10 @@
-from .utils.decorators import require_secret_token
+from core.lib.notion import insert_trade_record_to_notion
+from core.utils.decorators import require_secret_token
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from .services.scraper import (
+from core.services.scraper import (
     run_op_scraper,
     run_price_scraper,
     insert_settlement_date,
@@ -13,8 +14,9 @@ from .services.scraper import (
     insert_init_unfulfilled_ft,
     run_unfulfilled_future_scraper,
     run_unfulfilled_op_scraper,
+    get_fear_greed_index,
 )
-from .services.analyzer import (
+from core.services.analyzer import (
     run_analysis,
     get_revenue,
     get_risk_condition,
@@ -42,7 +44,7 @@ def view_dtl(request):
 @api_view(["POST"])
 @require_secret_token
 def test(request):
-    run_post_report_analysis()
+    insert_trade_record_to_notion(22222, 33333, 1, "Buy")
     return Response("")
 
 

@@ -1,18 +1,19 @@
 import shioaji as sj
 import os
 import time
-from ..services.line import push_bubble_message
+from core.lib.line import push_bubble_message
 from datetime import datetime
 from tenacity import retry, stop_after_attempt, wait_fixed
-from ..utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
-from ..types import BubbleMessage
+from core.utils.trump_words import TRUMP_STYLE_FUNNY_TRADE_BLESSINGS
+from core.types import BubbleMessage
 import random
-from ..middleware.error_decorators import core_logger
+from core.middleware.error_decorators import core_logger
 from django.core.cache import cache
+from django.conf import settings
 
 # TXF    大臺
 # MXF    小臺
-ca_file_name = os.getenv("SHIOAJI_CA_FILE_NAME", "")
+ca_file_name = settings.SHIOAJI_CA_FILE_NAME
 current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 ca_file_path = os.path.join(parent_directory, ca_file_name)
@@ -23,7 +24,7 @@ retry_attempt_count = 3
 class ShioajiAPI:
 
     def __init__(self):
-        self.api = sj.Shioaji(simulation=(os.getenv("APP_ENV") != "production"))
+        self.api = sj.Shioaji(simulation=(settings.APP_ENV.lower() != "production"))
 
     @retry(
         stop=stop_after_attempt(retry_attempt_count),
@@ -34,14 +35,14 @@ class ShioajiAPI:
         if self.api is not None:
             try:
                 self.api.login(
-                    api_key=os.getenv("SHIOAJI_API_KEY", ""),
-                    secret_key=os.getenv("SHIOAJI_SECRET_KEY", ""),
+                    api_key=settings.SHIOAJI_API_KEY,
+                    secret_key=settings.SHIOAJI_SECRET_KEY,
                     receive_window=60000,
                 )
                 self.api.activate_ca(
                     ca_path=ca_file_path,
-                    ca_passwd=os.getenv("SHIOAJI_CA_PASSWORD", ""),
-                    person_id=os.getenv("SHIOAJI_PERSONAL_ID", ""),
+                    ca_passwd=settings.SHIOAJI_CA_PASSWORD,
+                    person_id=settings.SHIOAJI_PERSONAL_ID,
                 )
             except Exception:
                 self.api.logout()

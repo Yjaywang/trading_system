@@ -3,24 +3,25 @@ import time
 import json
 from datetime import datetime, timedelta, time as dt_time
 import pandas as pd
-from ..utils.constants import (
+from core.utils.constants import (
     WEEKDAY_TRANSFORM,
     DATE_FORMAT,
     SLEEP_DURATION,
     DATE_FORMAT_2,
 )
-from ..models import OptionData, PriceData, Settlement, UnfulfilledOp, UnfulfilledFt
-from ..serializers import (
+from core.models import OptionData, PriceData, Settlement, UnfulfilledOp, UnfulfilledFt
+from core.serializers import (
     OptionDataSerializer,
     PriceDataSerializer,
     SettlementSerializer,
     UnfulfilledOpSerializer,
     UnfulfilledFtSerializer,
 )
-from ..utils.helper import post_form_data, parse_html
-from ..middleware.error_decorators import core_logger
+from core.utils.helper import post_form_data, parse_html
+from core.middleware.error_decorators import core_logger
 import requests
 from bs4 import BeautifulSoup
+from django.conf import settings
 
 
 def run_op_scraper():
@@ -46,7 +47,7 @@ def run_op_scraper():
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             core_logger.info(formatted_target_day)
 
-            op_url = f"{os.getenv('OPTION_DATA_API')}"
+            op_url = f"{settings.OPTION_DATA_API}"
             form_data = {
                 "queryType": "1",
                 "goDay": "",
@@ -149,7 +150,7 @@ def run_price_scraper():
                 market_periods = ["night"]
             formatted_target_day = current_date.strftime(DATE_FORMAT)
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
-            market_url = f"{os.getenv('MARKET_PRICE_DATA_API')}"
+            market_url = f"{settings.MARKET_PRICE_DATA_API}"
             core_logger.info(formatted_target_day)
 
             for market_period in market_periods:
@@ -249,7 +250,7 @@ def run_unfulfilled_op_scraper():
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             core_logger.info(formatted_target_day)
 
-            op_url = f"{os.getenv('OPTION_DATA_API')}"
+            op_url = f"{settings.OPTION_DATA_API}"
             form_data = {
                 "queryType": "1",
                 "goDay": "",
@@ -393,7 +394,7 @@ def run_unfulfilled_future_scraper():
             target_day = WEEKDAY_TRANSFORM[current_date.weekday()]
             core_logger.info(formatted_target_day)
 
-            future_url = f"{os.getenv('FUTURE_DATA_API')}"
+            future_url = f"{settings.FUTURE_DATA_API}"
             form_data = {
                 "queryType": "1",
                 "goDay": "",
@@ -970,7 +971,7 @@ def insert_init_unfulfilled_ft():
 
 def run_report_scraper(target_report_name: str, source_url: str):
     try:
-        base_url = os.getenv("BASE_URL")
+        base_url = settings.BASE_URL
         today = datetime.now().date().strftime("%Y/%m/%d")
 
         res = requests.get(source_url)

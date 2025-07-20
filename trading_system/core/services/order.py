@@ -1,20 +1,20 @@
-import os
 from datetime import datetime
-from ..models import Signal
-from ..serializers import OrderSerializer, SignalSerializer, RevenueSerializer
-from ..utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE, EMOJI_MAP
-from ..utils.trump_words import (
+from core.models import Signal
+from core.serializers import OrderSerializer, SignalSerializer, RevenueSerializer
+from core.utils.constants import WEEKDAY_TRANSFORM, DATE_FORMAT, POINT_VALUE, EMOJI_MAP
+from core.utils.trump_words import (
     TRUMP_STYLE_FUNNY_TRADE_BLESSINGS,
     TRUMP_STYLE_TRADING_CONGRATS,
     TRUMP_STYLE_LOSS_COMFORTS,
 )
-from .line import push_message, push_bubble_message
-from ..lib.shioaji import open_position, close_position, close_some_position
-from ..types import BubbleMessage
+from core.lib.line import push_message, push_bubble_message
+from core.lib.shioaji import open_position, close_position, close_some_position
+from core.types import BubbleMessage
 import random
-from ..middleware.error_decorators import core_logger
+from core.middleware.error_decorators import core_logger
 from django.core.cache import cache
-from ..lib.notion import insert_trade_record_to_notion
+from core.lib.notion import insert_trade_record_to_notion
+from django.conf import settings
 
 
 def _get_today_date_info():
@@ -82,8 +82,8 @@ def open_orders():
         if data["date"] is None:
             trading_signal = data["trading_signal"]
             action = {1: "Buy", -1: "Sell"}.get(trading_signal, None)
-            contract_code = os.getenv("PRODUCT_CODE")
-            quantity = int(os.getenv("PRODUCT_QUANTITY", "0"))
+            contract_code = settings.PRODUCT_CODE
+            quantity = settings.PRODUCT_QUANTITY
             if trading_signal is not None and quantity != 0:
                 deal_result = open_position(contract_code, action, quantity)
                 if deal_result is not None:
@@ -135,7 +135,7 @@ def open_orders():
 
 def close_orders():
     try:
-        contract_code = os.getenv("PRODUCT_CODE")
+        contract_code = settings.PRODUCT_CODE
         deal_result = close_position(contract_code)
         if deal_result is not None:
             action = deal_result["action"]
@@ -195,7 +195,7 @@ def open_some_orders(quantity):
         if data["date"] is None:
             trading_signal = data["trading_signal"]
             action = {1: "Buy", -1: "Sell"}.get(trading_signal, None)
-            contract_code = os.getenv("PRODUCT_CODE")
+            contract_code = settings.PRODUCT_CODE
             if trading_signal is not None and quantity != 0:
                 deal_result = open_position(contract_code, action, quantity)
                 if deal_result is not None:
@@ -247,7 +247,7 @@ def open_some_orders(quantity):
 
 def close_some_orders(quantity):
     try:
-        contract_code = os.getenv("PRODUCT_CODE")
+        contract_code = settings.PRODUCT_CODE
         deal_result = close_some_position(contract_code, quantity)
         if deal_result is not None:
             action = deal_result["action"]

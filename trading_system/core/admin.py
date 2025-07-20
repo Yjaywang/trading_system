@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import OptionData, PriceData, Settlement, Signal, Order, Revenue, Backtest
+from core.models import (
+    OptionData,
+    PriceData,
+    Settlement,
+    Signal,
+    Order,
+    Revenue,
+    Backtest,
+)
 
 # Register your models here.
 
