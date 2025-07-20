@@ -1,5 +1,5 @@
 # Stage 1: Build a virtual environment and install dependencies
-FROM python:3.10-slim AS builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /opt/venv
 
@@ -14,7 +14,7 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Build the final image with the application code and virtual environment
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 WORKDIR /trading_system
 
