@@ -29,12 +29,12 @@ services:
 
   app:
     build: .
-    image: trading_system_image
+    image: trading_system_image:prod
     platform: linux/amd64
     working_dir: /trading_system/trading_system
     volumes:
-      # - .:/trading_system
       - ./logs/app:/logs/app
+      - ./supervisord_prod.conf:/etc/supervisor/conf.d/supervisord.conf:ro
     ports:
       - "8000:8000"
       # - "5555:5555"
