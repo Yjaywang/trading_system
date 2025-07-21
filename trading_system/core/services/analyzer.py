@@ -168,7 +168,7 @@ def run_analysis():
                             f"---",
                             f"call_count/amount:",
                             f"put_count/amount:",
-                            f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}\n",
+                            f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}",
                             f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}",
                             f"---",
                             f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
