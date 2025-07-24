@@ -35,8 +35,8 @@ services:
     volumes:
       - ./logs/app:/logs/app
       - ./supervisord_prod.conf:/etc/supervisor/conf.d/supervisord.conf:ro
-    ports:
-      - "8000:8000"
+    # ports:
+      # - "8000:8000"
       # - "5555:5555"
     depends_on:
       redis:
