@@ -1,25 +1,25 @@
-name: Deploy to EC2
+# name: Deploy to EC2
 
-on:
-  push:
-    branches:
-      # - main
+# on:
+#   push:
+#     branches:
+#       # - main
 
-jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     name: Deploy
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/trading_system
-            sh deployment.sh
+#       - name: Deploy to EC2
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_SSH_KEY }}
+#           script: |
+#             cd ~/trading_system
+#             sh deployment.sh
