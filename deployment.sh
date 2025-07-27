@@ -1,4 +1,4 @@
-cd /home/ubuntu/trading_system
+cd ~/trading_system
 sudo chmod +x block_ips.sh
 git pull
 sh block_ips.sh
