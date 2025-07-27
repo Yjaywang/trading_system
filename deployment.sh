@@ -1,5 +1,4 @@
 cd ~/trading_system
-sudo chmod +x block_ips.sh
 git pull
 sh block_ips.sh
 sudo rm trading_system/celerybeat-schedule
