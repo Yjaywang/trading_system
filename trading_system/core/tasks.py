@@ -8,6 +8,7 @@ from core.services.scraper import (
 )
 from core.services.analyzer import (
     run_analysis,
+    run_analysis_v2,
     send_this_week_results,
     send_this_month_results,
     send_this_year_results,
@@ -74,7 +75,7 @@ def unfulfilled_data_summary_task():
 @shared_task(max_retries=0)
 @celery_log_task_status
 def analyzer_task():
-    run_analysis()
+    run_analysis_v2()
     daily_cron_status = cache.get(DAILY_CRON_STATUS)
     if daily_cron_status is None:
         daily_cron_status = copy.deepcopy(default_daily_cron_status)

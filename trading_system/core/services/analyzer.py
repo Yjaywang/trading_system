@@ -7,6 +7,7 @@ from core.serializers import (
 )
 from core.utils.trading_signal import (
     trading_signal_v4,
+    trading_signal_v5,
     reverse_signal_v1,
     settlement_signal_v1,
     calculate_final_signal,
@@ -125,6 +126,149 @@ def run_analysis():
                     "overall_trading_signal": overall_signal,
                     "reverse_signal": 1 if reverse_signal else 0,
                     "trading_signal": final_signal,
+                }
+
+                # search for db existing ref_date
+                is_existing = Signal.objects.filter(
+                    ref_date=signal_data_obj["ref_date"]
+                ).exists()
+                ## insert latest signal
+                if not is_existing:
+                    serializer = SignalSerializer(data=signal_data_obj)
+                    if serializer.is_valid():
+                        serializer.save()
+                        is_db_no_data = False
+                        core_logger.info("Signal data successfully saved.")
+                    else:
+                        core_logger.error(
+                            f"Validation errors occurred. {serializer.errors}"
+                        )
+
+                if current_date.date() == datetime.today().date():
+                    latest_op = OptionData.objects.latest("created_at")
+                    latest_op_data_serializer = OptionDataSerializer(latest_op)
+                    latest_op_data = dict(latest_op_data_serializer.data)
+                    bubble_message: BubbleMessage = {
+                        "header": f"Today's analysis for you",
+                        "body": [
+                            f"1. {datetime.now().strftime('%Y/%m/%d')}",
+                            f"2. ref_date:{signal_data_obj['ref_date']}",
+                            f"3. trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}",
+                            f"4. tw_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['tw_trading_signal']]}",
+                            f"5. fr_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['fr_trading_signal']]}",
+                            f"6. reverse_signal:{EMOJI_MAP['success'] if signal_data_obj['reverse_signal']==1 else EMOJI_MAP['failure']}",
+                            f"tw_call_count/amount:",
+                            f"tw_put_count/amount:",
+                            f"{latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}",
+                            f"{latest_op_data['tw_trade_put_count']} / {latest_op_data['tw_trade_put_amount']}",
+                            f"---",
+                            f"fr_call_count/amount:",
+                            f"fr_put_count/amount:",
+                            f"{latest_op_data['fr_trade_call_count']} / {latest_op_data['fr_trade_call_amount']}",
+                            f"{latest_op_data['fr_trade_put_count']} / {latest_op_data['fr_trade_put_amount']}",
+                            f"---",
+                            f"call_count/amount:",
+                            f"put_count/amount:",
+                            f"{latest_op_data['call_count']} / {latest_op_data['call_amount']}",
+                            f"{latest_op_data['put_count']} / {latest_op_data['put_amount']}",
+                            f"---",
+                            f"{random.choice(TRUMP_STYLE_ANALYSIS_JOKES)}",
+                            f"---",
+                        ],
+                        "footer": f"Suggest to do: {TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}",
+                    }
+                    push_bubble_message(bubble_message)
+            current_date += timedelta(days=1)
+    except Exception as e:
+        core_logger.error(f"sync signal data error: {e}")
+
+
+def run_analysis_v2():
+    is_db_no_data = True
+    try:
+        latest_signal_data = Signal.objects.latest("created_at")
+        is_db_no_data = False
+        if latest_signal_data.date is not None:
+            core_logger.info("no latest signal")
+            return
+        latest_date_str = latest_signal_data.ref_date
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
+        start_date = latest_date + timedelta(days=1)
+    except Signal.DoesNotExist:
+        core_logger.info("No SignalData found in the database.")
+        latest_date_str = datetime.today().strftime(DATE_FORMAT)
+        latest_date = datetime.strptime(latest_date_str, DATE_FORMAT)
+        start_date = latest_date
+    try:
+        end_date = datetime.today()
+        current_date = start_date
+        while current_date <= end_date:
+            formatted_target_day = current_date.strftime(DATE_FORMAT)
+            core_logger.info(formatted_target_day)
+
+            option_data = OptionData.objects.filter(date=formatted_target_day)
+            option_serializer = OptionDataSerializer(option_data, many=True)
+            reverse_signal = reverse_signal_v1(formatted_target_day)
+            settlement_signal = settlement_signal_v1(formatted_target_day)
+
+            if len(option_serializer.data) > 0:
+                data = option_serializer.data[0]
+                call_count = data["call_count"]
+                call_amount = data["call_amount"]
+                put_count = data["put_count"]
+                put_amount = data["put_amount"]
+                tw_trade_call_count = data["tw_trade_call_count"]
+                tw_trade_call_amount = data["tw_trade_call_amount"]
+                tw_trade_put_count = data["tw_trade_put_count"]
+                tw_trade_put_amount = data["tw_trade_put_amount"]
+                fr_trade_call_count = data["fr_trade_call_count"]
+                fr_trade_call_amount = data["fr_trade_call_amount"]
+                fr_trade_put_count = data["fr_trade_put_count"]
+                fr_trade_put_amount = data["fr_trade_put_amount"]
+
+                # update previous signal
+                if not is_db_no_data:
+                    latest_signal_data = Signal.objects.latest("created_at")
+                    update_signal_data_obj = {
+                        "year": data["year"],
+                        "month": data["month"],
+                        "date": data["date"],
+                        "day": data["day"],
+                        "settlement_signal": 1 if settlement_signal else 0,
+                    }
+                    serializer = SignalSerializer(
+                        latest_signal_data, data=update_signal_data_obj, partial=True
+                    )
+                    # latest_signal_data.date need to be null
+                    if serializer.is_valid() and not latest_signal_data.date:
+                        serializer.save()
+                        core_logger.info("Signal data successfully updated.")
+
+                overall_signal = trading_signal_v5(
+                    call_count, call_amount, put_count, put_amount, data["day"]
+                )
+                tw_signal = trading_signal_v5(
+                    tw_trade_call_count,
+                    tw_trade_call_amount,
+                    tw_trade_put_count,
+                    tw_trade_put_amount,
+                    data["day"],
+                )
+                fr_signal = trading_signal_v5(
+                    fr_trade_call_count,
+                    fr_trade_call_amount,
+                    fr_trade_put_count,
+                    fr_trade_put_amount,
+                    data["day"],
+                )
+
+                signal_data_obj = {
+                    "ref_date": data["date"],
+                    "tw_trading_signal": tw_signal,
+                    "fr_trading_signal": fr_signal,
+                    "overall_trading_signal": overall_signal,
+                    "reverse_signal": 1 if reverse_signal else 0,
+                    "trading_signal": overall_signal,
                 }
 
                 # search for db existing ref_date

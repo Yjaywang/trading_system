@@ -21,6 +21,7 @@ from core.services.analyzer import (
     get_revenue,
     get_risk_condition,
     get_unfulfilled_data,
+    run_analysis_v2,
     run_pre_report_analysis,
     run_post_report_analysis,
 )
@@ -134,7 +135,7 @@ def some_order(request):
 @api_view(["POST"])
 @require_secret_token
 def analysis(request):
-    run_analysis()
+    run_analysis_v2()
     print("ok")
     return Response("")
 
