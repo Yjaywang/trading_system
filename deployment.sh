@@ -1,7 +1,5 @@
 cd ~/trading_system
 git pull
-sh block_ips.sh
-sudo rm trading_system/celerybeat-schedule
 docker compose build
 docker compose down
 # clean up
