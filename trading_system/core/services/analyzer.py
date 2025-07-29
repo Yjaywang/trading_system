@@ -636,9 +636,12 @@ def run_pre_report_analysis():
             "body": [
                 f"Fear and Greed Index",
                 f"Date: {date}",
-                f"Score: {EMOJI_MAP['up_chart'] if score-previous_1_week >= 0 else EMOJI_MAP['down_chart']} {score} ({round(score-previous_1_week,2)})",
+                f"Score: {EMOJI_MAP['up_chart'] if score-previous_1_week >= 0 else EMOJI_MAP['down_chart']} {round(score,2)} ({round(score-previous_1_week,2)})",
                 f"Rating: {rating}",
-                f"Previous 1 Week: {previous_1_week}",
+                f"Previous 1 Week: {round(score-previous_1_week,2)}",
+                f"---",
+                f"Report pdf url",
+                f"{report_pdf_url}",
                 f"---",
                 f"Future results",
                 f"TW: {results['future']['domestic']}",
@@ -669,6 +672,9 @@ def run_post_report_analysis():
         bubble_message: BubbleMessage = {
             "header": f"{report_pdf_date}_{target_report_name}",
             "body": [
+                f"Report pdf url",
+                f"{report_pdf_url}",
+                f"---",
                 f"Future results",
                 f"TW: {results['future']['domestic']}",
                 f"FR: {results['future']['foreign']}",
