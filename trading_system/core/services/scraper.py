@@ -994,7 +994,7 @@ def run_report_scraper(target_report_name: str, source_url: str):
         return pdf_url, pdf_date
     except Exception as e:
         core_logger.error(f"error: {e}")
-        return None, None
+        raise e
 
 
 def get_fear_greed_index():
@@ -1019,4 +1019,4 @@ def get_fear_greed_index():
 
     except Exception as e:
         core_logger.error(f"error: {e}")
-        return 0, "", "1000/01/01", 0
+        raise e

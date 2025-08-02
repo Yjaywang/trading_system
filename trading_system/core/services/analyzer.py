@@ -659,6 +659,7 @@ def run_pre_report_analysis():
         push_bubble_message(bubble_message)
     else:
         core_logger.error("Failed to run pre-trading report analysis.")
+        raise ValueError("No url found for the pre-trading report.")
 
 
 def run_post_report_analysis():
@@ -693,3 +694,4 @@ def run_post_report_analysis():
         push_bubble_message(bubble_message)
     else:
         core_logger.error("Failed to run post-trading report analysis.")
+        raise ValueError("No url found for the post-trading report.")

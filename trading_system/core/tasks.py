@@ -105,26 +105,36 @@ def close_position_task():
     cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
 
 
-@shared_task(max_retries=0)
+@shared_task(
+    bind=True, max_retries=2, default_retry_delay=60 * 10
+)  # 10 mins after retry
 @celery_log_task_status
-def pre_market_report_task():
-    run_pre_report_analysis()
-    daily_cron_status = cache.get(DAILY_CRON_STATUS)
-    if daily_cron_status is None:
-        daily_cron_status = copy.deepcopy(default_daily_cron_status)
-    daily_cron_status["pre_market_report_task"] = EMOJI_MAP["success"]
-    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
+def pre_market_report_task(self):
+    try:
+        run_pre_report_analysis()
+        daily_cron_status = cache.get(DAILY_CRON_STATUS)
+        if daily_cron_status is None:
+            daily_cron_status = copy.deepcopy(default_daily_cron_status)
+        daily_cron_status["pre_market_report_task"] = EMOJI_MAP["success"]
+        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
+    except Exception as e:
+        self.retry(exc=e)
 
 
-@shared_task(max_retries=0)
+@shared_task(
+    bind=True, max_retries=2, default_retry_delay=60 * 10
+)  # 10 mins after retry
 @celery_log_task_status
-def post_market_report_task():
-    run_post_report_analysis()
-    daily_cron_status = cache.get(DAILY_CRON_STATUS)
-    if daily_cron_status is None:
-        daily_cron_status = copy.deepcopy(default_daily_cron_status)
-    daily_cron_status["post_market_report_task"] = EMOJI_MAP["success"]
-    cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
+def post_market_report_task(self):
+    try:
+        run_post_report_analysis()
+        daily_cron_status = cache.get(DAILY_CRON_STATUS)
+        if daily_cron_status is None:
+            daily_cron_status = copy.deepcopy(default_daily_cron_status)
+        daily_cron_status["post_market_report_task"] = EMOJI_MAP["success"]
+        cache.set(DAILY_CRON_STATUS, daily_cron_status, timeout=3600 * 12)
+    except Exception as e:
+        self.retry(exc=e)
 
 
 @shared_task
