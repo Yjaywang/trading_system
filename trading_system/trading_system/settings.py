@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 import environ
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env = environ.Env(
     APP_ENV=(str, None),
@@ -45,7 +48,7 @@ env = environ.Env(
     PRODUCT_CODE=(str, None),
     PRODUCT_QUANTITY=(int, None),
 )
-env.read_env(".env")
+env.read_env(os.path.join(BASE_DIR, ".env"))
 
 ########Django environment variables
 APP_ENV: str = env("APP_ENV")
@@ -91,7 +94,6 @@ PRODUCT_QUANTITY: int = env.int("PRODUCT_QUANTITY")
 
 
 from pathlib import Path
-import os
 from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
