@@ -640,9 +640,6 @@ def run_pre_report_analysis():
                 f"Rating: {rating}",
                 f"Previous 1 Week: {round(previous_1_week,2)}",
                 f"---",
-                f"Report pdf url",
-                f"<a href='{report_pdf_url}'>{report_pdf_url}</a>",
-                f"---",
                 f"Future results",
                 f"TW: {results['future']['domestic']}",
                 f"FR: {results['future']['foreign']}",
@@ -673,9 +670,6 @@ def run_post_report_analysis():
         bubble_message: BubbleMessage = {
             "header": f"{report_pdf_date}_{target_report_name}",
             "body": [
-                f"Report pdf url",
-                f"<a href='{report_pdf_url}'>{report_pdf_url}</a>",
-                f"---",
                 f"Future results",
                 f"TW: {results['future']['domestic']}",
                 f"FR: {results['future']['foreign']}",
