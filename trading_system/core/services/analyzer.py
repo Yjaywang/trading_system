@@ -261,6 +261,32 @@ def run_analysis_v2():
                     fr_trade_put_amount,
                     data["day"],
                 )
+                ###v4
+                overall_signal_v4 = trading_signal_v4(
+                    call_count, call_amount, put_count, put_amount
+                )
+                tw_signal_v4 = trading_signal_v4(
+                    tw_trade_call_count,
+                    tw_trade_call_amount,
+                    tw_trade_put_count,
+                    tw_trade_put_amount,
+                )
+                fr_signal_v4 = trading_signal_v4(
+                    fr_trade_call_count,
+                    fr_trade_call_amount,
+                    fr_trade_put_count,
+                    fr_trade_put_amount,
+                )
+                signals_v4 = {
+                    "overall_signal": overall_signal_v4,
+                    "tw_signal": tw_signal_v4,
+                    "fr_signal": fr_signal_v4,
+                    "reverse_signal": reverse_signal,
+                    "settlement_signal": 1 if settlement_signal else 0,
+                    "option_data": data,
+                }
+                final_signal_v4 = calculate_final_signal(signals_v4)
+                ###
 
                 signal_data_obj = {
                     "ref_date": data["date"],
@@ -297,9 +323,10 @@ def run_analysis_v2():
                             f"1. {datetime.now().strftime('%Y/%m/%d')}",
                             f"2. ref_date:{signal_data_obj['ref_date']}",
                             f"3. trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['trading_signal']]}",
-                            f"4. tw_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['tw_trading_signal']]}",
-                            f"5. fr_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['fr_trading_signal']]}",
-                            f"6. reverse_signal:{EMOJI_MAP['success'] if signal_data_obj['reverse_signal']==1 else EMOJI_MAP['failure']}",
+                            f"4. trading_signal_v4:{TRADING_SIGNAL_MAP[final_signal_v4]}",
+                            f"5. tw_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['tw_trading_signal']]}",
+                            f"6. fr_trading_signal:{TRADING_SIGNAL_MAP[signal_data_obj['fr_trading_signal']]}",
+                            f"7. reverse_signal:{EMOJI_MAP['success'] if signal_data_obj['reverse_signal']==1 else EMOJI_MAP['failure']}",
                             f"tw_call_count/amount:",
                             f"tw_put_count/amount:",
                             f"{latest_op_data['tw_trade_call_count']} / {latest_op_data['tw_trade_call_amount']}",
