@@ -231,3 +231,50 @@ class UnfulfilledFt(models.Model):
 
     def __str__(self):
         return f"{self.date} - {self.day} - {self.unfulfilled_ft_id}"
+
+
+class TradingParameters(models.Model):
+    DAY_CHOICES = [
+        ("Mon", "Mon"),
+        ("Tue", "Tue"),
+        ("Wed", "Wed"),
+        ("Thu", "Thu"),
+        ("Fri", "Fri"),
+    ]
+
+    parameters_id = models.AutoField(primary_key=True)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    count = models.IntegerField(default=0)
+    threshold = models.IntegerField(default=0)
+    reverse = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)  # created time
+    updated_at = models.DateTimeField(auto_now=True)  # updated time
+
+    def __str__(self):
+        return f"{self.year}-{self.month}-{self.day} - {self.parameters_id}"
+
+
+class Traders(models.Model):
+    PRODUCT_CHOICES = [
+        ("TX", "TXF"),
+        ("MTX", "MXF"),
+    ]
+    trader_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=64)
+    personal_id = models.CharField(max_length=20)
+    product = models.CharField(max_length=64, choices=PRODUCT_CHOICES)
+    product_count = models.IntegerField(default=0)
+    shioaji_api_key = models.CharField(max_length=256)
+    shioaji_secret_key = models.CharField(max_length=256)
+    shioaji_ca_path = models.CharField(max_length=256)
+    line_token = models.CharField(max_length=256)
+    line_user_id = models.CharField(max_length=256)
+    line_notify = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # created time
+    updated_at = models.DateTimeField(auto_now=True)  # updated time
+
+    def __str__(self):
+        return f"{self.name} - {self.trader_id}"
