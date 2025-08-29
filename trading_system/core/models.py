@@ -246,8 +246,8 @@ class TradingParameters(models.Model):
     year = models.IntegerField()
     month = models.IntegerField()
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
-    count = models.IntegerField(default=0)
     threshold = models.IntegerField(default=0)
+    count = models.IntegerField(default=0)
     reverse = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)  # created time
     updated_at = models.DateTimeField(auto_now=True)  # updated time
