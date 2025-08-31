@@ -249,6 +249,7 @@ class TradingParameters(models.Model):
     threshold = models.IntegerField(default=0)
     count = models.IntegerField(default=0)
     reverse = models.BooleanField(default=False)
+    note = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)  # created time
     updated_at = models.DateTimeField(auto_now=True)  # updated time
 
